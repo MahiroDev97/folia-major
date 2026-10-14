@@ -24,6 +24,8 @@ import { getSongAlbumLabel, getSongArtistLabel } from '../../services/onlineMusi
 import { useVisualizerBackgroundConfig } from './useVisualizerBackgroundConfig';
 import { useVisualizerTunings } from './useVisualizerTunings';
 import { NO_LYRIC_LINES } from '../../utils/lyrics/noLyricLines';
+import { hideChineseTranslations, shouldHideChineseTranslations } from '../../utils/lyrics/hideChineseTranslations';
+import { useTranslation } from 'react-i18next';
 import { selectLibraryPlayerBackdrop, useLibraryPlayerOcclusionStore } from '../../stores/useLibraryPlayerOcclusionStore';
 import { resolveVisualizerShowText } from '../app/presentation/playerVisualizerBackdrop';
 
@@ -100,6 +102,13 @@ export const useVisualizerRendererModel = ({
     // whole length of a blend.
     const displaySong = usePlaybackStore(selectDisplaySong);
     const displayLyrics = usePlaybackStore(selectDisplayLyrics);
+    // Source translations are always Chinese; outside a Chinese interface they are hidden.
+    const { i18n } = useTranslation();
+    const hideChinese = shouldHideChineseTranslations(i18n.resolvedLanguage ?? i18n.language);
+    const displayLines = useMemo(() => {
+        const lines = displayLyrics?.lines || NO_LYRIC_LINES;
+        return hideChinese ? hideChineseTranslations(lines) : lines;
+    }, [displayLyrics, hideChinese]);
     const displayCoverUrl = usePlaybackStore(selectDisplayCoverUrl);
     const displayPlayerState = usePlaybackStore(selectDisplayPlayerState);
     const backgroundConfig = useVisualizerBackgroundConfig();
@@ -131,7 +140,7 @@ export const useVisualizerRendererModel = ({
         mode,
         currentTime: lyricCurrentTime,
         currentLineIndex,
-        lines: displayLyrics?.lines || NO_LYRIC_LINES,
+        lines: displayLines,
         theme,
         subtitleTheme,
         isDaylight,
