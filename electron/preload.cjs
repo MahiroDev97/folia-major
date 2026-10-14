@@ -196,6 +196,18 @@ contextBridge.exposeInMainWorld('electron', {
         ipcRenderer.on('lyric-api-status-changed', listener);
         return () => ipcRenderer.removeListener('lyric-api-status-changed', listener);
     },
+    startSmtcMonitor: () => ipcRenderer.invoke('smtc-start'),
+    stopSmtcMonitor: () => ipcRenderer.invoke('smtc-stop'),
+    onSmtcSnapshot: (callback) => {
+        const listener = (_event, snapshot) => callback(snapshot);
+        ipcRenderer.on('smtc-snapshot', listener);
+        return () => ipcRenderer.removeListener('smtc-snapshot', listener);
+    },
+    onSmtcStatusChanged: (callback) => {
+        const listener = (_event, status) => callback(status);
+        ipcRenderer.on('smtc-status-changed', listener);
+        return () => ipcRenderer.removeListener('smtc-status-changed', listener);
+    },
     getDiscordPresenceStatus: () => ipcRenderer.invoke('discord-presence-get-status'),
     publishDiscordPresenceSnapshot: (snapshot) => ipcRenderer.invoke('discord-presence-publish-snapshot', snapshot),
     getPlaybackSyncBridgeStatus: () => ipcRenderer.invoke('playback-sync-bridge-get-status'),

@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { NowPlayingConnectionStatus, StageSource } from '../../../types';
 import type { PlayerCapConnectionStatus } from '../../../types/playerCap';
+import type { WebLyricConnectionStatus } from '../../../types/webLyricSource';
 import { useAppViewStore } from '../../../stores/useAppViewStore';
 import { useThemeSettingsStore } from '../../../stores/useThemeSettingsStore';
 import { usePlaybackStore } from '../../../stores/usePlaybackStore';
@@ -16,11 +17,13 @@ type StageSessionEmptyStateProps = {
     stageActiveEntryKind: string | null;
     nowPlayingConnectionStatus?: NowPlayingConnectionStatus;
     playerCapConnectionStatus?: PlayerCapConnectionStatus;
+    smtcConnectionStatus?: WebLyricConnectionStatus;
 };
 
 const SOURCE_LABELS: Record<string, string> = {
     'now-playing': 'Stage · Now Playing',
     playercap: 'Stage · Nexus PlayerCap',
+    smtc: 'Stage · Spotify / YouTube',
 };
 
 const StageSessionEmptyState: React.FC<StageSessionEmptyStateProps> = ({
@@ -28,6 +31,7 @@ const StageSessionEmptyState: React.FC<StageSessionEmptyStateProps> = ({
     stageActiveEntryKind,
     nowPlayingConnectionStatus,
     playerCapConnectionStatus,
+    smtcConnectionStatus,
 }) => {
     const { t } = useTranslation();
     const currentView = useAppViewStore(state => state.view);
@@ -46,7 +50,11 @@ const StageSessionEmptyState: React.FC<StageSessionEmptyStateProps> = ({
         return null;
     }
 
-    const detail = stageSource === 'playercap'
+    const detail = stageSource === 'smtc'
+        ? (smtcConnectionStatus === 'error'
+            ? t('options.smtcUnavailable')
+            : t('options.smtcWaiting'))
+        : stageSource === 'playercap'
         ? (playerCapConnectionStatus === 'connected'
             ? t('options.playerCapWaitingLyrics')
             : t('options.playerCapConnecting'))

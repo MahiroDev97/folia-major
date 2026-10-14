@@ -2053,6 +2053,10 @@ export default {
     "playerCapIgnoreClearHint": "Conserva la letra al pausar, en reposo o al cerrar la ventana; solo se actualiza cuando realmente se cambia de reproductor.",
     "playerCapWaitingLyrics": "Conectado, esperando la letra",
     "playerCapConnecting": "Conectando a Nexus PlayerCap…",
+    "smtcSourceTitle": "Seguir Spotify o YouTube en este equipo",
+    "smtcSourceDesc": "Lee lo que Windows reporta como en reproducción (Spotify de escritorio, YouTube en Chrome, Edge, Brave o Firefox) y busca la letra por su cuenta. Solo en Windows.",
+    "smtcWaiting": "Reproduce algo en Spotify o YouTube y la letra aparecerá aquí.",
+    "smtcUnavailable": "No se pudieron leer las sesiones multimedia de Windows. Esta fuente solo funciona en la app de escritorio para Windows.",
 
     "stageAddress": "Dirección de Stage",
     "stageSession": "Sesión actual",

@@ -34,6 +34,7 @@ const { createDisplaySleepBlocker } = require('./displaySleepBlocker.cjs');
 const { createVideoExportFileWriter } = require('./videoExportFileWriter.cjs');
 const { finalizeVideoExportFile } = require('./videoExportMp4.cjs');
 const { createLyricApi } = require('./lyricApi.cjs');
+const { createSmtcMonitor } = require('./smtc/smtcMonitor.cjs');
 const { createLocalCoverAssetStore, getLocalCoverAssetDirectory } = require('./localCoverAssets.cjs');
 const {
   compareVersions,
@@ -2098,6 +2099,21 @@ const discordPresence = createDiscordPresenceController({
   onStatusChange: (status) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('discord-presence-status-changed', status);
+    }
+  },
+});
+
+// Windows media sessions (Spotify, YouTube in a browser, …) for the SMTC Stage source. Started on
+// demand by the renderer while that source is active, stopped when it leaves or the app quits.
+const smtcMonitor = createSmtcMonitor({
+  onSnapshot: (snapshot) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('smtc-snapshot', snapshot);
+    }
+  },
+  onStatus: (status) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('smtc-status-changed', status);
     }
   },
 });
@@ -5370,6 +5386,7 @@ app.on('before-quit', () => {
     }
   }
   void discordPresence.destroy();
+  smtcMonitor.stop();
   void qqBackend.stop();
   void lyricApi.stop();
 });
@@ -6171,6 +6188,24 @@ ipcMain.handle('lyric-api-publish', (event, lyrics, offset) => {
     return false;
   }
   return lyricApi.publishLyricData(lyrics, offset);
+});
+
+ipcMain.handle('smtc-start', (event) => {
+  if (!isTrustedMainWindowContents(event.sender)) {
+    throw new Error('Untrusted renderer attempted to start the media session monitor.');
+  }
+
+  smtcMonitor.start();
+  return { status: smtcMonitor.getStatus(), snapshot: smtcMonitor.getSnapshot() };
+});
+
+ipcMain.handle('smtc-stop', (event) => {
+  if (!isTrustedMainWindowContents(event.sender)) {
+    throw new Error('Untrusted renderer attempted to stop the media session monitor.');
+  }
+
+  smtcMonitor.stop();
+  return smtcMonitor.getStatus();
 });
 
 ipcMain.handle('discord-presence-get-status', (event) => {

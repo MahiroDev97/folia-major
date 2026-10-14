@@ -595,11 +595,12 @@ const IntegrationSettingsSubview: React.FC<IntegrationSettingsSubviewProps> = ({
                                     <div className="text-[10px] uppercase tracking-[0.16em] opacity-40" style={{ color: 'var(--text-secondary)' }}>
                                         Source
                                     </div>
-                                    <div className="grid grid-cols-3 gap-2">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         {([
                                             { value: 'stage-api', label: 'Stage API' },
                                             { value: 'now-playing', label: 'Now Playing' },
                                             { value: 'playercap', label: 'Nexus PlayerCap' },
+                                            { value: 'smtc', label: 'Spotify / YouTube' },
                                         ] as Array<{ value: StageSource; label: string }>).map((option) => {
                                             const selected = stageSource === option.value;
                                             return (
@@ -617,7 +618,16 @@ const IntegrationSettingsSubview: React.FC<IntegrationSettingsSubviewProps> = ({
                                     </div>
                                 </div>
 
-                                {stageSource === 'playercap' ? (
+                                {stageSource === 'smtc' ? (
+                                    <div className={`rounded-xl border p-3 space-y-1 ${settingsCardClass}`}>
+                                        <div className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                                            {t('options.smtcSourceTitle')}
+                                        </div>
+                                        <div className="text-xs opacity-60" style={{ color: 'var(--text-secondary)' }}>
+                                            {t('options.smtcSourceDesc')}
+                                        </div>
+                                    </div>
+                                ) : stageSource === 'playercap' ? (
                                     renderPlayerCapPanel()
                                 ) : stageSource === 'now-playing' ? (
                                     renderNowPlayingPanel()

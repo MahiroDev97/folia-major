@@ -349,6 +349,26 @@ declare global {
     supported: boolean;
   }
 
+  // Windows media session (SMTC) seen by electron/smtc/smtcMonitor.cjs. positionMs was measured at updatedAtMs.
+  interface ElectronSmtcSession {
+    appId: string;
+    title: string;
+    artist: string;
+    album: string;
+    status: string;
+    positionMs: number;
+    durationMs: number;
+    updatedAtMs: number;
+  }
+
+  interface ElectronSmtcSnapshot {
+    sessions: ElectronSmtcSession[];
+    currentAppId: string | null;
+    receivedAtMs: number;
+  }
+
+  type ElectronSmtcStatus = 'unsupported' | 'stopped' | 'starting' | 'running' | 'error';
+
   interface ElectronDiscordPresenceSnapshot {
     hasTrack: boolean;
     title: string | null;
@@ -415,7 +435,7 @@ declare global {
   }
 
   type StageActiveEntryKind = 'lyrics' | 'media';
-  type StageSource = 'stage-api' | 'now-playing';
+  type StageSource = 'stage-api' | 'now-playing' | 'playercap' | 'smtc';
 
   interface StageEmbeddedUsltTag {
     language?: string;
@@ -940,6 +960,10 @@ declare global {
       setLyricApiEnabled: (enabled: boolean) => Promise<import('./types/lyricApi').LyricApiStatus>;
       publishLyricApiData: (lyrics: import('./types').LyricData | null, offset: number) => Promise<boolean>;
       onLyricApiStatusChanged: (callback: (status: import('./types/lyricApi').LyricApiStatus) => void) => () => void;
+      startSmtcMonitor?: () => Promise<{ status: ElectronSmtcStatus; snapshot: ElectronSmtcSnapshot | null }>;
+      stopSmtcMonitor?: () => Promise<ElectronSmtcStatus>;
+      onSmtcSnapshot?: (callback: (snapshot: ElectronSmtcSnapshot) => void) => () => void;
+      onSmtcStatusChanged?: (callback: (status: ElectronSmtcStatus) => void) => () => void;
       getDiscordPresenceStatus: () => Promise<ElectronDiscordPresenceStatus>;
       publishDiscordPresenceSnapshot: (snapshot: ElectronDiscordPresenceSnapshot) => Promise<ElectronDiscordPresenceStatus>;
       getPlaybackSyncBridgeStatus: () => Promise<ElectronPlaybackSyncBridgeStatus>;

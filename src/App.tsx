@@ -834,6 +834,9 @@ export default function App() {
         getPlayerCapDisplayTime,
         playerCapConnectionStatus,
         playerCapPlayers,
+        isSmtcStageActive,
+        getSmtcDisplayTime,
+        smtcConnectionStatus,
         mainPlaybackSnapshotRef,
         stageLyricsClockRef,
         syncStageLyricsClock,
@@ -1516,14 +1519,15 @@ export default function App() {
         animationFrameRef,
         effectiveLoopMode,
         isNowPlayingStageActive,
-        isPlayerCapStageActive,
+        // SMTC rides the PlayerCap branch: both are passive mirrors with their own extrapolated clock.
+        isPlayerCapStageActive: isPlayerCapStageActive || isSmtcStageActive,
         stageActiveEntryKind,
         stageLyricsSession,
         stageLyricsClockRef,
         getSyntheticStageLyricsTime,
         syncStageLyricsClock,
         getNowPlayingDisplayTime,
-        getPlayerCapDisplayTime,
+        getPlayerCapDisplayTime: isSmtcStageActive ? getSmtcDisplayTime : getPlayerCapDisplayTime,
         syncNowPlayingClock,
         lyricTimelineOffsetMs: effectiveLyricTimelineOffsetMs,
     });
@@ -2807,6 +2811,7 @@ export default function App() {
                 stageActiveEntryKind={stageActiveEntryKind}
                 nowPlayingConnectionStatus={nowPlayingConnectionStatus}
                 playerCapConnectionStatus={playerCapConnectionStatus}
+                smtcConnectionStatus={smtcConnectionStatus}
             />
 
             <AppOverlays model={appOverlaysModel} />

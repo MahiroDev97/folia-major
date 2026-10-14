@@ -2053,6 +2053,10 @@ export default {
     "playerCapIgnoreClearHint": "Keeps lyrics on pause, idle, or window close; refreshes only on an actual player switch.",
     "playerCapWaitingLyrics": "Connected, waiting for lyrics",
     "playerCapConnecting": "Connecting to Nexus PlayerCap…",
+    "smtcSourceTitle": "Follow Spotify or YouTube on this PC",
+    "smtcSourceDesc": "Reads what Windows reports as playing (Spotify desktop, YouTube in Chrome, Edge, Brave or Firefox) and searches the lyrics on its own. Windows only.",
+    "smtcWaiting": "Play something in Spotify or YouTube and the lyrics will show up here.",
+    "smtcUnavailable": "Could not read Windows media sessions. This source only works in the Windows desktop app.",
 
     "stageAddress": "Stage Address",
     "stageSession": "Current Session",

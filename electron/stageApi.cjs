@@ -236,6 +236,7 @@ function createStageApi({
     const configuredSource = store.get(stageModeSourceSettingKey);
     if (configuredSource === 'now-playing') return 'now-playing';
     if (configuredSource === 'playercap') return 'playercap';
+    if (configuredSource === 'smtc') return 'smtc';
     return 'stage-api';
   };
 

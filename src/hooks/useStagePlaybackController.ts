@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from 'react';
 import type { MotionValue } from 'framer-motion';
 import { LyricParserFactory } from '../utils/lyrics/LyricParserFactory';
 import { getFromCache, removeFromCache, saveToCache } from '../services/db';
 import { NowPlayingProvider } from '../services/nowPlayingProvider';
 import { usePlayerCapSource } from './usePlayerCapSource';
+import { useSmtcSource } from './useSmtcSource';
 import { findLatestActiveLineIndex, hasRenderableLyrics } from '../utils/appPlaybackHelpers';
 import { buildStageEntryKey, getStageLyricsTimelineBounds } from '../utils/appStageHelpers';
 import { getPlaybackSongKey, isStagePlaybackSong } from '../utils/appPlaybackGuards';
@@ -196,6 +197,26 @@ export function useStagePlaybackController({
     const playerCapConnectionStatus = playerCapState.connectionStatus;
     const playerCapSongIdRef = useRef(-1);
     const playerCapSongKeyRef = useRef('');
+
+    // === SMTC stage source (Windows media sessions: Spotify, YouTube in a browser): same passive mirror as PlayerCap ===
+    const isSmtcStageActive = activePlaybackContext === 'stage' && stageSource === 'smtc';
+    const { state: smtcState, getCurrentTimeSec: getSmtcTimeSec } = useSmtcSource({ enabled: stageSource === 'smtc' });
+    const getSmtcDisplayTime = useCallback((nowMs = Date.now()) => getSmtcTimeSec(nowMs), [getSmtcTimeSec]);
+    const smtcConnectionStatus = smtcState.connectionStatus;
+    const isPassiveMirrorSource = stageSource === 'playercap' || stageSource === 'smtc';
+    const smtcMirrorTrack = useMemo(() => (smtcState.track ? {
+        title: smtcState.track.name,
+        name: smtcState.track.name,
+        artist: smtcState.track.artist,
+        coverUrl: smtcState.track.coverUrl,
+    } : null), [smtcState.track]);
+    // What the passive mirror reads: one set of stable values for whichever passive source is active.
+    const mirrorTrack = stageSource === 'smtc' ? smtcMirrorTrack : playerCapState.track;
+    const mirrorLyrics = stageSource === 'smtc' ? smtcState.lyrics : playerCapState.lyrics;
+    const mirrorActivePlayer = stageSource === 'smtc' ? smtcState.activeAppId : playerCapState.activePlayer;
+    const mirrorDurationSec = stageSource === 'smtc' ? smtcState.clock.durationSec : playerCapState.clock.durationSec;
+    const mirrorPlayerState = stageSource === 'smtc' ? smtcState.playerState : playerCapState.playerState;
+    const mirrorLyricsLoading = stageSource === 'smtc' ? smtcState.lyricsLoading : false;
 
     const buildPlaybackSnapshot = useCallback((): PlaybackSnapshot => ({
         currentSong,
@@ -880,7 +901,7 @@ export function useStagePlaybackController({
     }, []);
 
     const openStagePlayer = useCallback(async () => {
-        if ((stageSource === 'now-playing' || stageSource === 'playercap') && activePlaybackContext === 'stage') {
+        if ((stageSource === 'now-playing' || isPassiveMirrorSource) && activePlaybackContext === 'stage') {
             navigateToPlayer();
             return;
         }
@@ -891,7 +912,7 @@ export function useStagePlaybackController({
             stagePlaybackSnapshotRef.current = buildPlaybackSnapshot();
         }
 
-        if (stageSource === 'playercap') {
+        if (isPassiveMirrorSource) {
             // Passive source: switch to the stage context and navigate; the main playback pane is filled by the reactive mirror effect.
             clearMainPlaybackContext();
             stagePlaybackSnapshotRef.current = null;
@@ -953,6 +974,7 @@ export function useStagePlaybackController({
         applyPlaybackSnapshot,
         buildPlaybackSnapshot,
         clearMainPlaybackContext,
+        isPassiveMirrorSource,
         loadNowPlayingIntoPlayback,
         loadStageLyricsIntoPlayback,
         loadStageSessionIntoPlayback,
@@ -973,7 +995,7 @@ export function useStagePlaybackController({
             return;
         }
 
-        if (stageSource === 'now-playing' || stageSource === 'playercap') {
+        if (stageSource === 'now-playing' || isPassiveMirrorSource) {
             stagePlaybackSnapshotRef.current = null;
             setActivePlaybackContext('main');
             clearMainPlaybackContext();
@@ -983,14 +1005,14 @@ export function useStagePlaybackController({
         stagePlaybackSnapshotRef.current = buildPlaybackSnapshot();
         setActivePlaybackContext('main');
         applyPlaybackSnapshot(mainPlaybackSnapshotRef.current);
-    }, [activePlaybackContext, applyPlaybackSnapshot, buildPlaybackSnapshot, clearMainPlaybackContext, setActivePlaybackContext, stageSource]);
+    }, [activePlaybackContext, applyPlaybackSnapshot, buildPlaybackSnapshot, clearMainPlaybackContext, isPassiveMirrorSource, setActivePlaybackContext, stageSource]);
 
     const interruptStagePlaybackForMainTransition = useCallback(() => {
         if (activePlaybackContext !== 'stage') {
             return null;
         }
 
-        if (stageSource === 'now-playing' || stageSource === 'playercap') {
+        if (stageSource === 'now-playing' || isPassiveMirrorSource) {
             stagePlaybackSnapshotRef.current = null;
             setActivePlaybackContext('main');
             clearMainPlaybackContext();
@@ -1005,7 +1027,7 @@ export function useStagePlaybackController({
         applyPlaybackSnapshot(restoredMainSnapshot);
 
         return restoredMainSnapshot;
-    }, [activePlaybackContext, applyPlaybackSnapshot, buildPlaybackSnapshot, clearMainPlaybackContext, setActivePlaybackContext, stageSource]);
+    }, [activePlaybackContext, applyPlaybackSnapshot, buildPlaybackSnapshot, clearMainPlaybackContext, isPassiveMirrorSource, setActivePlaybackContext, stageSource]);
 
     const clearStagePlaybackSession = useCallback(() => {
         stagePlaybackSnapshotRef.current = null;
@@ -1305,19 +1327,19 @@ export function useStagePlaybackController({
         setPlayerState(current => current === nextPlayerState ? current : nextPlayerState);
     }, [isNowPlayingStageActive, nowPlayingPaused, setPlayerState]);
 
-    // PlayerCap → main playback pane (passive mirror). Lyrics are already LyricData (no parsing); cover/duration/track update with each event, audio is left empty so <audio> does not hijack the clock.
+    // PlayerCap / SMTC → main playback pane (passive mirror). Lyrics are already LyricData (no parsing); cover/duration/track update with each event, audio is left empty so <audio> does not hijack the clock.
     useEffect(() => {
-        if (stageSource !== 'playercap' || activePlaybackContext !== 'stage') {
+        if (!isPassiveMirrorSource || activePlaybackContext !== 'stage') {
             return;
         }
-        const track = playerCapState.track;
-        const nextLyrics = playerCapState.lyrics;
+        const track = mirrorTrack;
+        const nextLyrics = mirrorLyrics;
         // Mid source-switch (the active player has changed, new content hasn't arrived yet for that brief window): keep the previous song's content to avoid flashing the empty-state overlay in the main view
         // (Folia's empty state depends on currentSong=null). Only genuine idle (activePlayer is empty) actually clears. Consistent with the OBS output's look and feel.
-        if (!track && !nextLyrics && playerCapState.activePlayer) {
+        if (!track && !nextLyrics && mirrorActivePlayer) {
             return;
         }
-        const durationSec = playerCapState.clock.durationSec;
+        const durationSec = mirrorDurationSec;
         const key = `${track?.title ?? ''}|${track?.name ?? ''}|${track?.artist ?? ''}`;
         if (key !== playerCapSongKeyRef.current) {
             playerCapSongKeyRef.current = key;
@@ -1326,7 +1348,7 @@ export function useStagePlaybackController({
         const durationMs = Math.max(0, Math.floor(durationSec * 1000));
         const song: SongResult | null = (track || nextLyrics) ? ({
             id: playerCapSongIdRef.current,
-            name: track?.name || track?.title || 'PlayerCap',
+            name: track?.name || track?.title || (stageSource === 'smtc' ? 'Spotify / YouTube' : 'PlayerCap'),
             artists: [{ id: 0, name: track?.artist || '' }],
             album: { id: 0, name: '', coverUrl: track?.coverUrl || undefined },
             durationMs,
@@ -1343,16 +1365,18 @@ export function useStagePlaybackController({
         setAudioSrc(null);
         setPlayQueue([]);
         setIsFmMode(false);
-        setIsLyricsLoading(false);
+        setIsLyricsLoading(mirrorLyricsLoading);
         setLyrics(nextLyrics);
         setDuration(durationSec);
     }, [
         stageSource,
         activePlaybackContext,
-        playerCapState.track,
-        playerCapState.lyrics,
-        playerCapState.activePlayer,
-        playerCapState.clock.durationSec,
+        isPassiveMirrorSource,
+        mirrorTrack,
+        mirrorLyrics,
+        mirrorLyricsLoading,
+        mirrorActivePlayer,
+        mirrorDurationSec,
         currentSongRef,
         pendingResumeTimeRef,
         setAudioSrc,
@@ -1367,12 +1391,12 @@ export function useStagePlaybackController({
     ]);
 
     useEffect(() => {
-        if (!isPlayerCapStageActive) {
+        if (!isPlayerCapStageActive && !isSmtcStageActive) {
             return;
         }
-        const nextPlayerState = playerCapState.playerState === 'playing' ? PlayerState.PLAYING : PlayerState.PAUSED;
+        const nextPlayerState = mirrorPlayerState === 'playing' ? PlayerState.PLAYING : PlayerState.PAUSED;
         setPlayerState(current => current === nextPlayerState ? current : nextPlayerState);
-    }, [isPlayerCapStageActive, playerCapState.playerState, setPlayerState]);
+    }, [isPlayerCapStageActive, isSmtcStageActive, mirrorPlayerState, setPlayerState]);
 
     useEffect(() => {
         if (activePlaybackContext !== 'stage' || stageSource) {
@@ -1406,6 +1430,9 @@ export function useStagePlaybackController({
         getPlayerCapDisplayTime,
         playerCapConnectionStatus,
         playerCapPlayers,
+        isSmtcStageActive,
+        getSmtcDisplayTime,
+        smtcConnectionStatus,
         mainPlaybackSnapshotRef,
         stageLyricsClockRef,
         resetNowPlayingClock,
