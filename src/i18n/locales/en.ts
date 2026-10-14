@@ -2564,6 +2564,7 @@ export default {
     "confirmClearAll": "Are you sure you want to clear all cache?",
     "electronSettings": "AI Theme Settings",
     "aiProvider": "AI Provider",
+    "aiProviderDesc": "Choose the AI service that generates smart lyric themes.",
     "otherCompatibleApi": "Other Compatible API",
     "useSystemProxyAI": "Use System Proxy for AI",
     "useSystemProxyAIDesc": "Route strictly AI requests through system proxy.",

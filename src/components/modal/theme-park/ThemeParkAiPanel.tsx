@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { DualTheme } from '../../../types';
 import { THEME_GENERATION_PROMPT_PREFIX, buildThemeSourcePrompt, parseAiThemeJsonInput } from '../../../utils/aiThemePrompts';
 import { sanitizeDualTheme } from '../../../services/themeSanitizer';
+import { localizeThemePromptText } from '../../../../shared/themePromptLanguage.mjs';
 
 // src/components/modal/theme-park/ThemeParkAiPanel.tsx
 // AI tab: the manual round trip the quick editor already offered — copy the generation prompt,
@@ -26,7 +27,7 @@ const ThemeParkAiPanel: React.FC<ThemeParkAiPanelProps> = ({
     fallbackTheme,
     onImportTheme,
 }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [isPromptCopied, setIsPromptCopied] = useState(false);
     const [isJsonCopied, setIsJsonCopied] = useState(false);
     const [importJsonText, setImportJsonText] = useState('');
@@ -34,7 +35,7 @@ const ThemeParkAiPanel: React.FC<ThemeParkAiPanelProps> = ({
 
     const handleCopyPrompt = async () => {
         try {
-            const prompt = `${THEME_GENERATION_PROMPT_PREFIX}\n\n${buildThemeSourcePrompt(promptSourceText || '', isPureMusic, songTitle)}`;
+            const prompt = `${localizeThemePromptText(THEME_GENERATION_PROMPT_PREFIX, i18n.language)}\n\n${buildThemeSourcePrompt(promptSourceText || '', isPureMusic, songTitle)}`;
             await navigator.clipboard.writeText(prompt);
             setIsPromptCopied(true);
             window.setTimeout(() => setIsPromptCopied(false), 2000);

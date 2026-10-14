@@ -2565,6 +2565,7 @@ export default {
     "confirmClearAll": "确定要清空所有缓存吗？",
     "electronSettings": "AI主题设置",
     "aiProvider": "AI 供应商",
+    "aiProviderDesc": "选择生成智能歌词主题效果的 AI 服务商。",
     "otherCompatibleApi": "其他兼容接口",
     "useSystemProxyAI": "为AI使用系统代理",
     "useSystemProxyAIDesc": "仅将AI相关的网络请求通过系统代理路由。",

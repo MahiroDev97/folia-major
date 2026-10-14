@@ -9,6 +9,7 @@ import { FALLBACK_AI_DUAL_THEME, sanitizeDualTheme } from '../../services/themeS
 import { BASE_DUAL_THEME } from '../../services/baseThemes';
 import { extractColors } from '../../utils/colorExtractor';
 import { THEME_GENERATION_PROMPT_PREFIX, buildThemeSourcePrompt, parseAiThemeJsonInput } from '../../utils/aiThemePrompts';
+import { localizeThemePromptText } from '../../../shared/themePromptLanguage.mjs';
 import { useThemeQuickEditorStore, type ThemeQuickEditorKind } from '../../stores/useThemeQuickEditorStore';
 import { buildRecommendedColors } from '../../utils/themeEditorPalette';
 import FastColorPicker from '../shared/FastColorPicker';
@@ -55,7 +56,7 @@ const ThemeQuickEditor: React.FC<ThemeQuickEditorProps> = ({
     onClose,
     onSave,
 }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const normalizedInitialTheme = useMemo(() => sanitizeDualTheme(initialTheme), [initialTheme]);
     const [draftTheme, setDraftTheme] = useState<DualTheme>(() => normalizedInitialTheme);
     const [mode, setMode] = useState<EditableMode>(() => (isDaylight ? 'light' : 'dark'));
@@ -204,7 +205,7 @@ const ThemeQuickEditor: React.FC<ThemeQuickEditorProps> = ({
 
     const handleCopyPrompt = async () => {
         try {
-            const finalPrompt = THEME_GENERATION_PROMPT_PREFIX + '\n\n' + buildThemeSourcePrompt(promptSourceText || '', isPureMusic, songTitle);
+            const finalPrompt = localizeThemePromptText(THEME_GENERATION_PROMPT_PREFIX, i18n.language) + '\n\n' + buildThemeSourcePrompt(promptSourceText || '', isPureMusic, songTitle);
             await navigator.clipboard.writeText(finalPrompt);
             setIsCopied(true);
             setTimeout(() => setIsCopied(false), 2000);

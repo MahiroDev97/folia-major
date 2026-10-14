@@ -53,6 +53,7 @@ const { resolveLinuxPasswordStore } = require('./linuxPasswordStore.cjs');
 const { createTranscodeService } = require('./transcode/service.cjs');
 const { TRANSCODE_PROTOCOL_SCHEME } = require('./transcode/protocol.cjs');
 const { sanitizeDualTheme: sanitizeGeneratedDualTheme } = require('../shared/themeSanitizer.cjs');
+const { localizeThemePromptText, localizeThemeSchema } = require('../shared/themePromptLanguage.cjs');
 const {
   detectOpenAICompatibleProvider,
   normalizeOpenAIChatCompletionsUrl,
@@ -3712,7 +3713,7 @@ async function generateGeminiTheme({ apiKey, systemPrompt, sourcePrompt, customF
       ],
       generationConfig: {
         responseMimeType: 'application/json',
-        responseSchema: getGeminiResponseSchema(),
+        responseSchema: localizeThemeSchema(getGeminiResponseSchema(), getMainLocaleKey()),
       }
     }),
   });
@@ -3861,7 +3862,8 @@ Response MUST be a valid JSON object. Do not include markdown formatting like \`
 JSON Schema:
 ${JSON.stringify(THEME_JSON_SCHEMA, null, 2)}` : '';
 
-  return `${instructionPrompt}${schemaPrompt}`;
+  // Theme name and description follow the interface language (see shared/themePromptLanguage).
+  return localizeThemePromptText(`${instructionPrompt}${schemaPrompt}`, getMainLocaleKey());
 }
 
 function buildThemeSourcePrompt(snippet, isPureMusic, songTitle) {
@@ -6619,7 +6621,7 @@ ipcMain.handle('generate-theme', async (event, lyricsText, options = {}) => {
         store: aiCredentials.settingsView,
         systemPrompt,
         sourcePrompt,
-        schema: THEME_JSON_SCHEMA,
+        schema: localizeThemeSchema(THEME_JSON_SCHEMA, getMainLocaleKey()),
         schemaName: THEME_JSON_SCHEMA_NAME,
         customFetch,
         maxTokens: detectOpenAICompatibleProvider(apiUrl) === 'openai'

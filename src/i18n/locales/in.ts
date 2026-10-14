@@ -2430,6 +2430,7 @@ export default {
     "confirmClearAll": "Yakin ingin membersihkan semua cache?",
     "electronSettings": "Pengaturan Tema AI",
     "aiProvider": "Penyedia AI",
+    "aiProviderDesc": "Pilih layanan AI yang membuat tema lirik pintar.",
     "otherCompatibleApi": "API Kompatibel Lainnya",
     "useSystemProxyAI": "Gunakan Proxy Sistem untuk AI",
     "useSystemProxyAIDesc": "Rutekan permintaan AI secara ketat melalui proxy sistem.",

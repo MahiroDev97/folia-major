@@ -2564,6 +2564,7 @@ export default {
     "confirmClearAll": "¿Seguro que quieres borrar toda la caché?",
     "electronSettings": "Ajustes del tema de IA",
     "aiProvider": "Proveedor de IA",
+    "aiProviderDesc": "Elige el servicio de IA que genera los temas inteligentes para la letra.",
     "otherCompatibleApi": "Otra API compatible",
     "useSystemProxyAI": "Usar el proxy del sistema para la IA",
     "useSystemProxyAIDesc": "Envía solo las solicitudes de IA a través del proxy del sistema.",

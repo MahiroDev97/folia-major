@@ -615,7 +615,7 @@ const DesktopSettingsSubview: React.FC<DesktopSettingsSubviewProps> = ({
                                 {t('options.aiProvider') || 'AI Provider'}
                             </div>
                             <div className="text-xs opacity-50 max-w-[420px]" style={{ color: 'var(--text-secondary)' }}>
-                                选择生成智能歌词主题效果的 AI 服务商。
+                                {t('options.aiProviderDesc')}
                             </div>
                         </div>
 
