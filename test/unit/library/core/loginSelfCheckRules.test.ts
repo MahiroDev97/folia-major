@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import en from '@/i18n/locales/en';
 import inLocale from '@/i18n/locales/in';
+import es from '@/i18n/locales/es';
 import zh from '@/i18n/locales/zh-CN';
 import {
     LOGIN_SELF_CHECK_COPY,
@@ -180,7 +181,7 @@ describe('login self-check items and copy', () => {
             LOGIN_SELF_CHECK_COPY.failedKey,
             'home.qrDiagnosticsDisclosure',
         ];
-        for (const locale of [en, zh, inLocale]) {
+        for (const locale of [en, zh, inLocale, es]) {
             const home = (locale as unknown as { home: Record<string, unknown> }).home;
             for (const key of keys) expect(home[key.replace(/^home\./, '')], key).toBeTruthy();
         }

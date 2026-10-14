@@ -832,7 +832,8 @@ export default {
       "settings-language-system": { "title": "Follow system language", "description": "Use the browser or system language" },
       "settings-language-zh-CN": { "title": "Switch language to Chinese", "description": "Use Simplified Chinese in the interface" },
       "settings-language-en": { "title": "Switch language to English", "description": "Use English in the interface" },
-      "settings-language-in": { "title": "Switch language to Indonesian", "description": "Use Bahasa Indonesia in the interface" }
+      "settings-language-in": { "title": "Switch language to Indonesian", "description": "Use Bahasa Indonesia in the interface" },
+      "settings-language-es": { "title": "Switch language to Spanish", "description": "Use Spanish in the interface" }
     }
   },
   "ui": {
@@ -1706,6 +1707,7 @@ export default {
     "appLanguageZhCN": "Simplified Chinese",
     "appLanguageEnUS": "English",
     "appLanguageInID": "Indonesian",
+    "appLanguageEs": "Español",
     "appLanguageSystemHint": "Follow the browser or system language. Current: {{language}}",
     "playbackEntryView": "View opened by Play",
     "playbackEntryViewDesc": "Which view opens by default after you press play.",

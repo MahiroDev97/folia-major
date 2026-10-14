@@ -832,7 +832,8 @@ export default {
       "settings-language-system": { "title": "跟随系统语言", "description": "使用浏览器或系统语言" },
       "settings-language-zh-CN": { "title": "切换为中文", "description": "界面使用简体中文" },
       "settings-language-en": { "title": "切换为英文", "description": "界面使用 English" },
-      "settings-language-in": { "title": "切换为印尼语", "description": "界面使用 Bahasa Indonesia" }
+      "settings-language-in": { "title": "切换为印尼语", "description": "界面使用 Bahasa Indonesia" },
+      "settings-language-es": { "title": "切换为西班牙语", "description": "界面使用 Español" }
     }
   },
   "ui": {
@@ -1705,6 +1706,7 @@ export default {
     "appLanguageZhCN": "简体中文",
     "appLanguageEnUS": "English",
     "appLanguageInID": "Indonesian",
+    "appLanguageEs": "Español",
     "appLanguageSystemHint": "跟随浏览器或系统语言。当前生效：{{language}}",
     "playbackEntryView": "播放后进入的视图",
     "playbackEntryViewDesc": "点击播放后默认打开哪个视图。",

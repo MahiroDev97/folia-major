@@ -12,6 +12,7 @@ import {
 import en from '@/i18n/locales/en';
 import zh from '@/i18n/locales/zh-CN';
 import id from '@/i18n/locales/in';
+import es from '@/i18n/locales/es';
 
 // test/unit/utils/libraryWallSeamStyle.test.ts
 // 信息条实色模式的预设（设计稿 §5「缝的材质」）：取值与规范化、每个预设的材质变量（主题纸色不写变量、印刷系带墨色）、
@@ -57,7 +58,7 @@ describe('library wall seam styles', () => {
 
     it('names every preset in all three locales', () => {
         for (const key of Object.values(LIBRARY_WALL_SEAM_STYLE_LABEL_KEYS)) {
-            for (const bundle of [en, zh, id]) expect(typeof lookup(bundle, key)).toBe('string');
+            for (const bundle of [en, zh, id, es]) expect(typeof lookup(bundle, key)).toBe('string');
         }
     });
 });

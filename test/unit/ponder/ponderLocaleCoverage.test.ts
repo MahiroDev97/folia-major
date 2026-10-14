@@ -3,13 +3,14 @@ import { PONDER_TARGET_LIST } from '@/components/ponder/ponderRegistry';
 import en from '@/i18n/locales/en';
 import zhCN from '@/i18n/locales/zh-CN';
 import id from '@/i18n/locales/in';
+import es from '@/i18n/locales/es';
 import type { PonderStep } from '@/types/ponder';
 
 // test/unit/ponder/ponderLocaleCoverage.test.ts
 // 场景文案缺键不会报任何错，只会把 "ponder.captions.panelSlide.intro" 原样画进教程里。
 // 命令注册表那套契约测试管不到这些 key，这是唯一会发现它的地方 —— 印尼语那份尤其容易漏。
 
-const LOCALES = { en, 'zh-CN': zhCN, in: id } as const;
+const LOCALES = { en, 'zh-CN': zhCN, in: id, es } as const;
 
 const lookup = (bundle: unknown, key: string): unknown =>
     key.split('.').reduce<unknown>(

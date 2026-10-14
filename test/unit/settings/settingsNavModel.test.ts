@@ -4,6 +4,7 @@ import { SETTINGS_NAV_GROUP_SPECS, buildSettingsNavGroups, findSettingsNavItem, 
 import en from '../../../src/i18n/locales/en';
 import zhCN from '../../../src/i18n/locales/zh-CN';
 import id from '../../../src/i18n/locales/in';
+import es from '../../../src/i18n/locales/es';
 
 // test/unit/settings/settingsNavModel.test.ts
 // The nav model replaced four parallel id-keyed lists in SettingsModal; these lock in that every
@@ -81,7 +82,7 @@ describe('settingsNavModel', () => {
         expect(anchorsOf(false)).not.toContain('bravaisSettings');
     });
 
-    it.each([['en', en], ['zh-CN', zhCN], ['in', id]] as const)('has every label and description key in %s', (_name, bundle) => {
+    it.each([['en', en], ['zh-CN', zhCN], ['in', id], ['es', es]] as const)('has every label and description key in %s', (_name, bundle) => {
         const keys = SETTINGS_NAV_GROUP_SPECS.flatMap(group => [
             group.labelKey,
             ...group.sections.flatMap(section => [section.labelKey, section.descriptionKey]),

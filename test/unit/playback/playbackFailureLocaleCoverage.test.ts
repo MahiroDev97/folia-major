@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import en from '@/i18n/locales/en';
 import zhCN from '@/i18n/locales/zh-CN';
 import id from '@/i18n/locales/in';
+import es from '@/i18n/locales/es';
 import {
     PLAYBACK_FAILURE_ACTION_LABEL_KEYS,
     PLAYBACK_FAILURE_MESSAGE_KEYS,
@@ -11,7 +12,7 @@ import {
 // 播放失败文案缺键不会报错，只会把 "status.songNetworkFailed" 原样显示在状态条上。
 // 策略表导出的全部文案 key 和按钮 key 在这里逐个对三份 locale 校验，印尼语那份尤其容易漏。
 
-const LOCALES = { en, 'zh-CN': zhCN, in: id } as const;
+const LOCALES = { en, 'zh-CN': zhCN, in: id, es } as const;
 
 const lookup = (bundle: unknown, key: string): unknown =>
     key.split('.').reduce<unknown>(
