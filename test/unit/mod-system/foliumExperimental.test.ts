@@ -193,9 +193,10 @@ describe('ponder.targets', () => {
         expect(i18n.t(target.summaryKey!)).toBe('Only one text');
         expect(i18n.t(localized.action!.labelKey)).toBe('Docs: open');
         expect(i18n.t(caption.textKey, { mod: '⌘' })).toBe('Press ⌘ + K to open');
-        // A language the label does not name falls back like every other mod label.
+        // A language the label does not name falls back like every other mod label: English outside a
+        // Chinese interface (see pickFoliumLabelFallback).
         await i18n.changeLanguage('in');
-        expect(i18n.t(localized.titleKey)).toBe('认识面板');
+        expect(i18n.t(localized.titleKey)).toBe('Meet the panel');
         await i18n.changeLanguage('en');
 
         expect(localized.anchors.box.labelKey).toBeUndefined();

@@ -154,6 +154,19 @@ export const formatFoliumParamNumber = (value: number) => {
     return value.toFixed(2);
 };
 
+/**
+ * The label to use when a mod has none for the active language: Chinese first only for a Chinese
+ * interface, English otherwise (mods ship zh-CN and en; a Spanish UI reads English far better).
+ */
+export const pickFoliumLabelFallback = (
+    label: Record<string, string | undefined>,
+    language: string | undefined,
+): string | undefined => (
+    String(language ?? '').toLowerCase().startsWith('zh')
+        ? label['zh-CN'] ?? label.en
+        : label.en ?? label['zh-CN']
+);
+
 /** Resolves a label map for the active language with a deterministic fallback chain. */
 export const resolveFoliumLabel = (
     label: Record<string, string | undefined> | undefined,
@@ -161,5 +174,5 @@ export const resolveFoliumLabel = (
     fallback: string,
 ): string => {
     if (!label) return fallback;
-    return label[language] ?? label['zh-CN'] ?? label.en ?? fallback;
+    return label[language] ?? pickFoliumLabelFallback(label, language) ?? fallback;
 };

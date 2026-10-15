@@ -3,7 +3,7 @@ import { appendVisualizerEntry, removeVisualizerEntry } from '@/components/visua
 import type { VisualizerRegistryEntry } from '@/components/visualizer/definition';
 import type { VisualizerMode } from '@/types';
 import type { FoliumParam, FoliumParamAccess, FoliumVisualizerDef } from '../contract';
-import { sanitizeFoliumParams } from '../params';
+import { pickFoliumLabelFallback, sanitizeFoliumParams } from '../params';
 import { createFoliumParamAccess } from '../paramStore';
 import { createFoliumRegistry } from '../registry';
 import { FoliumSettingsCard } from '../FoliumSettingsCard';
@@ -30,8 +30,10 @@ export interface StoredFoliumVisualizer {
 
 export const foliumVisualizerMode = (id: string): VisualizerMode => `mod:${id}` as VisualizerMode;
 
-const resolveLabelFallback = (label: Record<string, string | undefined>, id: string): string =>
-    label['zh-CN'] ?? label.en ?? label[document?.documentElement?.lang] ?? id;
+const resolveLabelFallback = (label: Record<string, string | undefined>, id: string): string => {
+    const language = document?.documentElement?.lang;
+    return label[language] ?? pickFoliumLabelFallback(label, language) ?? id;
+};
 
 const buildRegistryEntry = (id: string, modId: string, stored: StoredFoliumVisualizer): VisualizerRegistryEntry => {
     const labelFallback = resolveLabelFallback(stored.def.label, id);

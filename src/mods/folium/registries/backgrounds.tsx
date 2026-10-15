@@ -11,7 +11,7 @@ import type { Theme, VisualizerBackgroundMode } from '@/types';
 import type { FoliumBackgroundContext, FoliumBackgroundDef, FoliumParam, FoliumParamAccess, FoliumParamValues } from '../contract';
 import { toFoliumTheme } from '../dto';
 import { createFoliumAudio } from '../audio';
-import { sanitizeFoliumParams } from '../params';
+import { pickFoliumLabelFallback, sanitizeFoliumParams } from '../params';
 import { createFoliumParamAccess } from '../paramStore';
 import { createFoliumRegistry } from '../registry';
 import { FoliumMountHost } from '../FoliumMountHost';
@@ -33,8 +33,10 @@ export interface StoredFoliumBackground {
 
 const EMPTY_SETTINGS: FoliumParamValues = Object.freeze({});
 
-const resolveLabelFallback = (label: Record<string, string | undefined>, id: string): string =>
-    label['zh-CN'] ?? label.en ?? id;
+const resolveLabelFallback = (label: Record<string, string | undefined>, id: string): string => {
+    const language = document?.documentElement?.lang;
+    return label[language] ?? pickFoliumLabelFallback(label, language) ?? id;
+};
 
 /*
  * Background context: fixed per mount on staticMode only; theme, cover, pause
