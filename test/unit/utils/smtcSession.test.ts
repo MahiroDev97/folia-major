@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanSmtcTrack, lyricsScriptFitsTrack, pickActiveSmtcSession, smtcSessionClock, stableStageSongId, type SmtcSessionLike } from '@/utils/smtcSession';
+import { cleanSmtcTrack, isLikelyAdOrShort, lyricsScriptFitsTrack, pickActiveSmtcSession, smtcSessionClock, stableStageSongId, type SmtcSessionLike } from '@/utils/smtcSession';
 import { currentWebLyricTimeSec } from '@/utils/webLyricSource';
 
 const SPOTIFY = 'SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify';
@@ -89,6 +89,18 @@ describe('cleanSmtcTrack versions', () => {
   it('uses a live album after "|" as the hint', () => {
     expect(cleanSmtcTrack({ appId: 'Brave', title: 'Soda Stereo - De Música Ligera (En Vivo) | Me Verás Volver', artist: 'Soda Stereo' }))
       .toEqual({ title: 'De Música Ligera', artist: 'Soda Stereo', version: null, context: 'Me Verás Volver' });
+  });
+
+  it.each([
+    ['Kaleidoscope -【Hatsune Miku】', 'Kikuo', 'Kaleidoscope', 'Kikuo'],
+    ['♪ アイドル - YOASOBI @yoasobi #jpop', 'YOASOBI', 'アイドル', 'YOASOBI'],
+  ])('cleans tags and decorations in %s', (title, artist, expectedTitle, expectedArtist) => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toMatchObject({ title: expectedTitle, artist: expectedArtist });
+  });
+
+  it('splits on a tilde too', () => {
+    const track = cleanSmtcTrack({ appId: 'Brave', title: 'Sigo aquí. (El Planeta Del Tesoro) ~ Alex Ubago.', artist: 'Saturn' });
+    expect([track.title, track.swapped?.title]).toContain('Sigo aquí. (El Planeta Del Tesoro)');
   });
 
   it('trusts the side that matches the channel', () => {

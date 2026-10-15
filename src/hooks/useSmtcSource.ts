@@ -18,6 +18,7 @@ import {
   smtcSessionClock,
   smtcTrackKey,
   lyricsScriptFitsTrack,
+  isLikelyAdOrShort,
   type SmtcCleanTrack,
   type SmtcVersionKind,
   type SmtcSessionLike,
@@ -233,6 +234,14 @@ export function useSmtcSource({ enabled }: { enabled: boolean }): SmtcSource {
         useSmtcLyricsOverrideStore.getState().setSong(null, false);
         lyricRequestIdRef.current += 1;
         setState(s => ({ ...initialSmtcSourceState(), connectionStatus: s.connectionStatus }));
+        return;
+      }
+
+      // A YouTube ad (or a Short) between songs: keep the song on screen, paused, until it returns.
+      if (isLikelyAdOrShort(session)) {
+        setState(s => (s.track
+          ? { ...s, playerState: 'paused', clock: { ...s.clock, positionSec: currentWebLyricTimeSec(s.clock, Date.now()), anchoredAtMs: Date.now(), playing: false } }
+          : s));
         return;
       }
 

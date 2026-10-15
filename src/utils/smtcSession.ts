@@ -62,7 +62,8 @@ const NOISE_GROUP = new RegExp(
 );
 const FEAT = /\s*[([]?\s*(?:feat\.?|ft\.?|featuring)\s+[^)\]]*[)\]]?/i;
 const ARTIST_SUFFIX = /\s*(?:-\s*topic|vevo|official(?:\s+channel)?|オフィシャル(?:チャンネル)?)\s*$/i;
-const DASH_SPLIT = /\s+[-–—]\s+/;
+// "Artist - Title", and the "Title ~ Artist" some uploads use.
+const DASH_SPLIT = /\s+[-–—~]\s+/;
 
 const normalizeForCompare = (value: string) => value.toLowerCase().replace(/[\s*'’"]/g, '');
 
@@ -101,15 +102,21 @@ const stripVersionTags = (value: string) => value
   .replace(NOISE_GROUP, (match, inner: string) => (isVersionText(inner) ? '' : match))
   .replace(VERSION_PHRASES, ' ');
 
-// Upload tags in front of the title: 【MV】, 【Kasane Teto SV2】, [AMV]… as long as a title remains.
+// 【】 groups anywhere ("Kaleidoscope -【Hatsune Miku】") are upload tags, not the title.
+const LENTICULAR_TAG = /\s*【[^】]*】\s*/g;
+// Decorations and mentions: "♪ BOWSETTE … @piyoasdf", "#vocaloid".
+const DECORATIONS = /[♪♫♬♩★☆♡♥]|(?:^|\s)[@#][\p{L}\p{N}_.]+/gu;
+
+// Upload tags in front of the title (【MV】, [AMV]) and 【】 tags anywhere, as long as a title remains.
 const stripLeadingTags = (value: string) => {
-  let current = value;
+  let current = value.replace(DECORATIONS, ' ');
   while (LEADING_TAG.test(current)) {
     const next = current.replace(LEADING_TAG, '');
     if (!next.trim()) break;
     current = next;
   }
-  return current;
+  const withoutTags = current.replace(LENTICULAR_TAG, ' ');
+  return withoutTags.trim() ? withoutTags : current;
 };
 
 const looksLikeArtist = (candidate: string, channel: string) => {
@@ -234,3 +241,11 @@ export function stableStageSongId(seed: string): number {
   }
   return -(1_000_000 + (Math.abs(hash) % 1_000_000_000));
 }
+
+/**
+ * A browser session under a minute long is almost always a YouTube ad or a Short: following it
+ * would search lyrics for a commercial and drop the song. Spotify never reports ads this way.
+ */
+export const isLikelyAdOrShort = (session: Pick<SmtcSessionLike, 'appId' | 'durationMs'>): boolean => (
+  !isSpotifySmtcApp(session.appId) && session.durationMs > 0 && session.durationMs < 61_000
+);
