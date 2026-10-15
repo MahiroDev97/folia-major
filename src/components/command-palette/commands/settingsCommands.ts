@@ -1,5 +1,7 @@
 import { useSmtcLyricsOverrideStore } from '../../../stores/useSmtcLyricsOverrideStore';
 import { clearSmtcOverrideLyrics } from '../../../utils/smtcLyricsOverride';
+import { nudgeStageLyricOffset } from '../../../utils/smtcLyricOffset';
+import { usePlaybackStore } from '../../../stores/usePlaybackStore';
 import { syncNow } from '../../../services/sync/syncCoordinator';
 import { isSyncConfigured } from '../../../services/sync/syncConfig';
 import { buildObsCustomCss } from '../../../services/obs/obsCustomCss';
@@ -555,6 +557,44 @@ export const settingsCommands: CommandPaletteCommand[] = [
             const { song, notifyChanged } = useSmtcLyricsOverrideStore.getState();
             if (!song) return false;
             void clearSmtcOverrideLyrics(song).then(notifyChanged);
+            return true;
+        },
+    },
+    {
+        id: 'stage-lyrics-later',
+        isAvailable: () => useSmtcLyricsOverrideStore.getState().song !== null,
+        group: 'settings',
+        title: 'Delay lyrics by 0.5 s',
+        description: 'Show the lyrics later when they run ahead of the song; remembered for this video or track',
+        keywords: ['offset', 'desfase', 'sync', 'karaoke', 'spotify', 'youtube'],
+        execute: () => {
+            if (!useSmtcLyricsOverrideStore.getState().song) return false;
+            nudgeStageLyricOffset(500);
+            return true;
+        },
+    },
+    {
+        id: 'stage-lyrics-earlier',
+        isAvailable: () => useSmtcLyricsOverrideStore.getState().song !== null,
+        group: 'settings',
+        title: 'Advance lyrics by 0.5 s',
+        description: 'Show the lyrics earlier when they lag behind the song; remembered for this video or track',
+        keywords: ['offset', 'desfase', 'sync', 'karaoke', 'spotify', 'youtube'],
+        execute: () => {
+            if (!useSmtcLyricsOverrideStore.getState().song) return false;
+            nudgeStageLyricOffset(-500);
+            return true;
+        },
+    },
+    {
+        id: 'stage-lyrics-offset-reset',
+        isAvailable: () => useSmtcLyricsOverrideStore.getState().song !== null && usePlaybackStore.getState().lyricTimelineOffsetMs !== 0,
+        group: 'settings',
+        title: 'Clear this song\'s lyric offset',
+        description: 'Put the lyrics back on the original timing for this video or track',
+        keywords: ['offset', 'desfase', 'sync', 'spotify', 'youtube'],
+        execute: () => {
+            nudgeStageLyricOffset(null);
             return true;
         },
     },

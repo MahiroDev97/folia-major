@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanSmtcTrack, pickActiveSmtcSession, smtcSessionClock, type SmtcSessionLike } from '@/utils/smtcSession';
+import { cleanSmtcTrack, lyricsScriptFitsTrack, pickActiveSmtcSession, smtcSessionClock, stableStageSongId, type SmtcSessionLike } from '@/utils/smtcSession';
 import { currentWebLyricTimeSec } from '@/utils/webLyricSource';
 
 const SPOTIFY = 'SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify';
@@ -24,7 +24,7 @@ describe('cleanSmtcTrack', () => {
     ['Despacito', 'Luis Fonsi - Topic', 'Despacito', 'Luis Fonsi'],
     ['【MV】マーシャル・マキシマイザー / 柊マグネタイト', '柊マグネタイト', 'マーシャル・マキシマイザー', '柊マグネタイト'],
     ['Shakira - Hips Don\'t Lie (Official 4K Video) ft. Wyclef Jean', 'shakiraVEVO', 'Hips Don\'t Lie', 'Shakira'],
-    ['Soda Stereo - De Música Ligera (En Vivo) | Me Verás Volver', 'Soda Stereo', 'De Música Ligera', 'Soda Stereo'],
+    ['Soda Stereo - De Música Ligera (En Vivo)', 'Soda Stereo', 'De Música Ligera', 'Soda Stereo'],
   ])('cleans %s by %s', (title, artist, expectedTitle, expectedArtist) => {
     expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toEqual({ title: expectedTitle, artist: expectedArtist, version: null });
   });
@@ -49,7 +49,50 @@ describe('cleanSmtcTrack versions', () => {
     ['Idol - Spanish Cover', 'Cantante', 'Idol', 'Cantante', 'foreign'],
     ['Perfect (Cover by Fulana)', 'Fulana', 'Perfect', 'Fulana', 'cover'],
   ])('detects %s', (title, artist, expectedTitle, expectedArtist, version) => {
-    expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toEqual({ title: expectedTitle, artist: expectedArtist, version });
+    expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toMatchObject({ title: expectedTitle, artist: expectedArtist, version });
+  });
+
+  // Real uploads that went wrong: the title hidden in 『』, a leading 【】 tag, "Song - Artist" order.
+  it.each([
+    ['『Anytime Anywhere FULL ESPAÑOL』Sousou no Frieren Ending Cover | Milet『 @Beth Rodríguez 』♡', 'Beth Rodríguez', 'Anytime Anywhere', 'foreign'],
+    ['【Kasane Teto SV2】In the End [SynthV Cover]', 'ararix', 'In the End', 'cover'],
+    ['Aishite Aishite Aishite - Kikuo', 'Kikuo', 'Aishite Aishite Aishite', null],
+    ['BIRDBRAIN - JamieP', 'JamieP', 'BIRDBRAIN', null],
+  ])('reads %s', (title, artist, expectedTitle, version) => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toMatchObject({ title: expectedTitle, version });
+  });
+
+  it('offers the other reading when neither side is the channel', () => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title: 'Ed Sheeran - Perfect (Karaoke Version)', artist: 'Sing King' })).toEqual({
+      title: 'Perfect', artist: 'Ed Sheeran', version: 'karaoke', swapped: { title: 'Ed Sheeran', artist: 'Perfect' },
+    });
+  });
+
+  it('reads a bilingual title as the title', () => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title: '【Off-Vocal Karaoke】Yararara / ヤラララ - ABM [Kanji & Romaji]', artist: 'Kara-P' })).toEqual({
+      title: 'Yararara', artist: 'ABM', version: 'karaoke', swapped: { title: 'ヤラララ', artist: 'ABM' },
+    });
+  });
+
+  it('ignores a quote that only holds a tag', () => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title: '「KARAOKE」Igaku / Medicine (English Cover) - Kasane Teto SV - Off Vocal', artist: 'Pokelfig studio' })).toEqual({
+      title: 'Igaku', artist: 'Kasane Teto SV', version: 'foreign', swapped: { title: 'Medicine', artist: 'Kasane Teto SV' },
+    });
+  });
+
+  it('keeps the other "|" segments as a context hint', () => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title: 'Mi Reflejo | Mulán | Karaoke 🌸 🍃', artist: 'Miss Disney' })).toEqual({
+      title: 'Mi Reflejo', artist: 'Miss Disney', version: 'karaoke', context: 'Mulán',
+    });
+  });
+
+  it('uses a live album after "|" as the hint', () => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title: 'Soda Stereo - De Música Ligera (En Vivo) | Me Verás Volver', artist: 'Soda Stereo' }))
+      .toEqual({ title: 'De Música Ligera', artist: 'Soda Stereo', version: null, context: 'Me Verás Volver' });
+  });
+
+  it('trusts the side that matches the channel', () => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title: 'Aishite Aishite Aishite - Kikuo', artist: 'Kikuo' }).swapped).toBeUndefined();
   });
 
   it('strips version tags from Spotify titles too', () => {
@@ -96,5 +139,30 @@ describe('smtcSessionClock', () => {
   it('never anchors in the future', () => {
     const clock = smtcSessionClock(session({ positionMs: 5_000, updatedAtMs: 10_000 }), 9_000);
     expect(clock.anchoredAtMs).toBe(9_000);
+  });
+});
+
+describe('lyricsScriptFitsTrack', () => {
+  const russian = 'Ярарара, и досада душу рвёт Ярарара на исходе';
+  it('rejects a Russian cover for a Japanese karaoke', () => {
+    expect(lyricsScriptFitsTrack(russian, { version: 'karaoke' }, 'Yararara ヤラララ ABM')).toBe(false);
+  });
+  it('accepts Japanese lyrics for the same song', () => {
+    expect(lyricsScriptFitsTrack('ヤラララ 心を揺らす', { version: 'karaoke' }, 'Yararara ヤラララ ABM')).toBe(true);
+  });
+  it('leaves plain Latin-titled tracks alone (K-pop)', () => {
+    expect(lyricsScriptFitsTrack('봄날 보고 싶다 이렇게 말하니까', { version: null }, 'Spring Day BTS')).toBe(true);
+  });
+  it('accepts the script the title itself uses', () => {
+    expect(lyricsScriptFitsTrack(russian, { version: 'cover' }, 'Ярарара Kara-P')).toBe(true);
+  });
+});
+
+describe('stableStageSongId', () => {
+  it('gives the same upload the same id, clear of other Stage ids', () => {
+    const seed = 'Brave|Mi Reflejo | Mulán | Karaoke|Miss Disney';
+    expect(stableStageSongId(seed)).toBe(stableStageSongId(seed));
+    expect(stableStageSongId(seed)).toBeLessThan(-999_999);
+    expect(stableStageSongId(seed)).not.toBe(stableStageSongId('Brave|Mi Reflejo|Christina Aguilera'));
   });
 });

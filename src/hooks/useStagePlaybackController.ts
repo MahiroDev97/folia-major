@@ -6,6 +6,7 @@ import { getFromCache, removeFromCache, saveToCache } from '../services/db';
 import { NowPlayingProvider } from '../services/nowPlayingProvider';
 import { usePlayerCapSource } from './usePlayerCapSource';
 import { useSmtcSource } from './useSmtcSource';
+import { stableStageSongId } from '../utils/smtcSession';
 import { findLatestActiveLineIndex, hasRenderableLyrics } from '../utils/appPlaybackHelpers';
 import { buildStageEntryKey, getStageLyricsTimelineBounds } from '../utils/appStageHelpers';
 import { getPlaybackSongKey, isStagePlaybackSong } from '../utils/appPlaybackGuards';
@@ -217,6 +218,10 @@ export function useStagePlaybackController({
     const mirrorDurationSec = stageSource === 'smtc' ? smtcState.clock.durationSec : playerCapState.clock.durationSec;
     const mirrorPlayerState = stageSource === 'smtc' ? smtcState.playerState : playerCapState.playerState;
     const mirrorLyricsLoading = stageSource === 'smtc' ? smtcState.lyricsLoading : false;
+    // A fixed id per upload (app + title + artist), so the per-song lyric offset Folia remembers
+    // applies to the same Spotify track or YouTube video every time it plays.
+    const smtcSongSeed = smtcState.track?.seed;
+    const smtcSongId = useMemo(() => (typeof smtcSongSeed === 'string' ? stableStageSongId(smtcSongSeed) : null), [smtcSongSeed]);
 
     // A karaoke / cover version shows the original song's lyrics: say so once per track.
     const smtcLyricsVersion = smtcState.lyricsVersion;
@@ -1359,8 +1364,9 @@ export function useStagePlaybackController({
             playerCapSongIdRef.current -= 1; // one stable negative id per new song, triggers the main app's song-change side effects (theme/offset/etc.)
         }
         const durationMs = Math.max(0, Math.floor(durationSec * 1000));
+        const songId = stageSource === 'smtc' && smtcSongId !== null ? smtcSongId : playerCapSongIdRef.current;
         const song: SongResult | null = (track || nextLyrics) ? ({
-            id: playerCapSongIdRef.current,
+            id: songId,
             name: track?.name || track?.title || (stageSource === 'smtc' ? 'Spotify / YouTube' : 'PlayerCap'),
             artists: [{ id: 0, name: track?.artist || '' }],
             album: { id: 0, name: '', coverUrl: track?.coverUrl || undefined },
@@ -1390,6 +1396,7 @@ export function useStagePlaybackController({
         mirrorLyricsLoading,
         mirrorActivePlayer,
         mirrorDurationSec,
+        smtcSongId,
         currentSongRef,
         pendingResumeTimeRef,
         setAudioSrc,

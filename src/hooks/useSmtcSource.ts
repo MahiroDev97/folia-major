@@ -17,6 +17,7 @@ import {
   pickActiveSmtcSession,
   smtcSessionClock,
   smtcTrackKey,
+  lyricsScriptFitsTrack,
   type SmtcCleanTrack,
   type SmtcVersionKind,
   type SmtcSessionLike,
@@ -64,36 +65,73 @@ const parseLrc = async (lrc: string): Promise<LyricData | null> => {
   }
 };
 
+// A title alone only identifies a song when it says enough: a single short word ("Kikuo",
+// "Binomi") would match anything. CJK titles carry more per character.
+const isDistinctiveTitle = (title: string) => {
+  const trimmed = title.trim();
+  if (/[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/.test(trimmed)) return trimmed.length >= 2;
+  return trimmed.split(/\s+/).length >= 2 || trimmed.length >= 8;
+};
+
+interface LyricQuery {
+  title: string;
+  artist: string;
+}
+
+// The order the readings are tried in: each reading with its artist, then (for versions, whose
+// "artist" is usually the uploader) each distinctive title on its own.
+function buildLyricQueries(track: SmtcCleanTrack): LyricQuery[] {
+  const readings = [{ title: track.title, artist: track.artist }, ...(track.swapped ? [track.swapped] : [])];
+  const queries: LyricQuery[] = readings.filter(reading => reading.title);
+  // Two names for one song ("Igaku / Medicine") identify it even when each is short.
+  const isAliasPair = Boolean(track.swapped && track.swapped.artist === track.artist);
+  if (track.version) {
+    readings
+      .filter(reading => reading.artist && (isAliasPair || isDistinctiveTitle(reading.title)))
+      .forEach(reading => queries.push({ title: reading.title, artist: '' }));
+  }
+  const seen = new Set<string>();
+  return queries.filter((query) => {
+    const key = `${query.title.toLowerCase()}|${query.artist.toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 async function searchLyrics(track: SmtcCleanTrack, session: SmtcSessionLike): Promise<SmtcLyricsResult> {
-  // A music video often runs longer than the song, and versions (karaoke, covers) differ from the
-  // original, so in those cases durations are only a hint.
+  // A music video often runs longer than the song, and a karaoke or cover rarely matches the
+  // original's length, so in those cases durations are only a hint (or ignored).
   const durationIsReliable = isSpotifySmtcApp(session.appId) && !track.version;
-  const album = session.album || undefined;
-  // A cover's or karaoke channel's "artist" is usually the uploader, not the original artist.
-  const artists = track.version && track.artist ? [track.artist, ''] : [track.artist];
-  const durations = durationIsReliable ? [session.durationMs] : [session.durationMs, 0];
+  // "Mulán" in "Mi Reflejo | Mulán | Karaoke" tells two songs with the same name apart.
+  const album = track.context || session.album || undefined;
+  const queries = buildLyricQueries(track);
+  const durations = durationIsReliable ? [session.durationMs] : track.version ? [0] : [session.durationMs, 0];
   // Only a version's lyrics come from the original song; plain tracks report null.
   const version = track.version;
+  // Lyrics in a script the upload never uses (a Russian cover of a Japanese song) are skipped.
+  const trackText = `${session.title} ${session.artist}`;
+  const fits = (text: string) => lyricsScriptFitsTrack(text, track, trackText);
 
   const lrclibPromise = (async () => {
-    for (const artist of artists) {
+    for (const query of queries) {
       const lrc = await fetchLrclibSyncedLyrics({
-        title: track.title,
-        artist,
-        album: durationIsReliable ? album : undefined,
+        title: query.title,
+        artist: query.artist,
+        album: durationIsReliable || track.context ? album : undefined,
         durationMs: durationIsReliable ? session.durationMs : 0,
       });
-      if (lrc) return lrc;
+      if (lrc && fits(lrc.replace(/[[^]]*]/g, ' '))) return lrc;
     }
     return null;
   })();
 
   const preferredSource = useLyricSettingsStore.getState().preferredAlternativeLyricSource;
-  for (const artist of artists) {
+  for (const query of queries) {
     for (const durationMs of durations) {
       try {
-        const match = await autoMatchBestLyric(track.title, artist, durationMs, { album, preferredSource });
-        if (match && !match.isPureMusic && match.lyrics) {
+        const match = await autoMatchBestLyric(query.title, query.artist, durationMs, { album, preferredSource });
+        if (match && !match.isPureMusic && match.lyrics && fits(match.lyrics.lines.map(line => line.fullText).join(' '))) {
           return { lyrics: match.lyrics, coverUrl: getSongCoverUrl(match.song) ?? null, version };
         }
         // An instrumental match is right for the original but not for a sung cover of it.
