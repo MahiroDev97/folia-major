@@ -33,6 +33,15 @@ vi.mock('@/hooks/usePlayerCapSource', async () => {
         usePlayerCapSource: () => ({ state: initialPlayerCapSession(), players: [], getCurrentTimeSec: () => 0 }),
     };
 });
+vi.mock('@/hooks/useSmtcSource', async () => {
+    const { initialWebLyricSourceState } = await import('@/types/webLyricSource');
+    return {
+        useSmtcSource: () => ({
+            state: { ...initialWebLyricSourceState(), activeAppId: null, lyricsLoading: false, lyricsVersion: null },
+            getCurrentTimeSec: () => 0,
+        }),
+    };
+});
 vi.mock('@/services/db', () => ({
     getFromCache: vi.fn(async () => null),
     removeFromCache: vi.fn(async () => undefined),

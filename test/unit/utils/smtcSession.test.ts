@@ -26,7 +26,7 @@ describe('cleanSmtcTrack', () => {
     ['Shakira - Hips Don\'t Lie (Official 4K Video) ft. Wyclef Jean', 'shakiraVEVO', 'Hips Don\'t Lie', 'Shakira'],
     ['Soda Stereo - De Música Ligera (En Vivo) | Me Verás Volver', 'Soda Stereo', 'De Música Ligera', 'Soda Stereo'],
   ])('cleans %s by %s', (title, artist, expectedTitle, expectedArtist) => {
-    expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toEqual({ title: expectedTitle, artist: expectedArtist });
+    expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toEqual({ title: expectedTitle, artist: expectedArtist, version: null });
   });
 
   it('keeps brackets that are part of the song title', () => {
@@ -35,7 +35,26 @@ describe('cleanSmtcTrack', () => {
 
   it('trusts Spotify metadata as published', () => {
     expect(cleanSmtcTrack({ appId: SPOTIFY, title: 'Title - 2011 Remaster', artist: 'Band' }))
-      .toEqual({ title: 'Title - 2011 Remaster', artist: 'Band' });
+      .toEqual({ title: 'Title - 2011 Remaster', artist: 'Band', version: null });
+  });
+});
+
+describe('cleanSmtcTrack versions', () => {
+  it.each([
+    ['Ed Sheeran - Perfect (Karaoke Version)', 'Sing King', 'Perfect', 'Ed Sheeran', 'karaoke'],
+    ['Bohemian Rhapsody - Karaoke Version', 'Queen Karaoke', 'Bohemian Rhapsody', 'Queen Karaoke', 'karaoke'],
+    ['YOASOBI - アイドル (Instrumental)', 'YOASOBI', 'アイドル', 'YOASOBI', 'instrumental'],
+    ['【歌ってみた】ボルテッカー / 歌い手ちゃん', '歌い手ちゃん', 'ボルテッカー', '歌い手ちゃん', 'cover'],
+    ['Bad Apple!! (Versión en Español)', 'Fandubber', 'Bad Apple!!', 'Fandubber', 'foreign'],
+    ['Idol - Spanish Cover', 'Cantante', 'Idol', 'Cantante', 'foreign'],
+    ['Perfect (Cover by Fulana)', 'Fulana', 'Perfect', 'Fulana', 'cover'],
+  ])('detects %s', (title, artist, expectedTitle, expectedArtist, version) => {
+    expect(cleanSmtcTrack({ appId: 'Brave', title, artist })).toEqual({ title: expectedTitle, artist: expectedArtist, version });
+  });
+
+  it('strips version tags from Spotify titles too', () => {
+    expect(cleanSmtcTrack({ appId: SPOTIFY, title: 'Shape of You - Instrumental', artist: 'Karaoke Band' }))
+      .toEqual({ title: 'Shape of You', artist: 'Karaoke Band', version: 'instrumental' });
   });
 });
 

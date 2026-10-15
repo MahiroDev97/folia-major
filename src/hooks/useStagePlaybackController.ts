@@ -218,6 +218,19 @@ export function useStagePlaybackController({
     const mirrorPlayerState = stageSource === 'smtc' ? smtcState.playerState : playerCapState.playerState;
     const mirrorLyricsLoading = stageSource === 'smtc' ? smtcState.lyricsLoading : false;
 
+    // A karaoke / cover version shows the original song's lyrics: say so once per track.
+    const smtcLyricsVersion = smtcState.lyricsVersion;
+    const smtcHasLyrics = Boolean(smtcState.lyrics);
+    const smtcTrackSeed = smtcState.track?.seed ?? null;
+    const smtcVersionNoticeRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!isSmtcStageActive || !smtcLyricsVersion || !smtcHasLyrics) return;
+        const noticeKey = `${smtcTrackSeed}|${smtcLyricsVersion}`;
+        if (smtcVersionNoticeRef.current === noticeKey) return;
+        smtcVersionNoticeRef.current = noticeKey;
+        setStatusMsg({ type: 'info', text: t(`status.smtcLyricsVersion_${smtcLyricsVersion}`) });
+    }, [isSmtcStageActive, smtcHasLyrics, smtcLyricsVersion, smtcTrackSeed, t]);
+
     const buildPlaybackSnapshot = useCallback((): PlaybackSnapshot => ({
         currentSong,
         lyrics,

@@ -149,6 +149,7 @@ import { useWallHandoffStore } from './stores/useWallHandoffStore';
 import { countRender } from './dev/renderCount';
 import { resolveSongLiked } from './utils/resolveSongLiked';
 import StageSessionEmptyState from './components/app/stage/StageSessionEmptyState';
+import SmtcLyricsOverrideDialogs from './components/app/stage/SmtcLyricsOverrideDialogs';
 import { useVisualizerRendererModel } from './components/visualizer/useVisualizerRendererModel';
 import { useVisualizerTunings } from './components/visualizer/useVisualizerTunings';
 import { usePlaybackRuntimeRefs } from './hooks/usePlaybackRuntimeRefs';
@@ -2813,6 +2814,8 @@ export default function App() {
                 playerCapConnectionStatus={playerCapConnectionStatus}
                 smtcConnectionStatus={smtcConnectionStatus}
             />
+
+            <SmtcLyricsOverrideDialogs />
 
             <AppOverlays model={appOverlaysModel} />
 

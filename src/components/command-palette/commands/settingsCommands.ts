@@ -1,3 +1,5 @@
+import { useSmtcLyricsOverrideStore } from '../../../stores/useSmtcLyricsOverrideStore';
+import { clearSmtcOverrideLyrics } from '../../../utils/smtcLyricsOverride';
 import { syncNow } from '../../../services/sync/syncCoordinator';
 import { isSyncConfigured } from '../../../services/sync/syncConfig';
 import { buildObsCustomCss } from '../../../services/obs/obsCustomCss';
@@ -510,6 +512,49 @@ export const settingsCommands: CommandPaletteCommand[] = [
                 return false;
             }
             context.settings.generateAITheme();
+            return true;
+        },
+    },
+    // Spotify / YouTube in Stage (SMTC source): replace the automatic lyrics for what is playing.
+    {
+        id: 'stage-lyrics-match',
+        isAvailable: () => useSmtcLyricsOverrideStore.getState().song !== null,
+        group: 'settings',
+        title: 'Pick other lyrics for this song',
+        description: 'Search online lyrics for what Spotify or YouTube is playing and remember the choice',
+        keywords: ['wrong lyrics', 'letra equivocada', 'karaoke', 'cover', 'spotify', 'youtube'],
+        execute: () => {
+            const store = useSmtcLyricsOverrideStore.getState();
+            if (!store.song) return false;
+            store.openDialog('match');
+            return true;
+        },
+    },
+    {
+        id: 'stage-lyrics-import',
+        isAvailable: () => useSmtcLyricsOverrideStore.getState().song !== null,
+        group: 'settings',
+        title: 'Import lyrics for this song',
+        description: 'Load a lyric file (.lrc, .ttml…) for what Spotify or YouTube is playing and remember it',
+        keywords: ['lrc', 'my lyrics', 'mi letra', 'cover', 'spotify', 'youtube'],
+        execute: () => {
+            const store = useSmtcLyricsOverrideStore.getState();
+            if (!store.song) return false;
+            store.openDialog('import');
+            return true;
+        },
+    },
+    {
+        id: 'stage-lyrics-reset',
+        isAvailable: () => useSmtcLyricsOverrideStore.getState().hasOverride,
+        group: 'settings',
+        title: 'Back to automatic lyrics',
+        description: 'Forget the lyrics chosen by hand for this song and search them again',
+        keywords: ['reset lyrics', 'restablecer letra', 'spotify', 'youtube'],
+        execute: () => {
+            const { song, notifyChanged } = useSmtcLyricsOverrideStore.getState();
+            if (!song) return false;
+            void clearSmtcOverrideLyrics(song).then(notifyChanged);
             return true;
         },
     },
