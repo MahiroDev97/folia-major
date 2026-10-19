@@ -150,6 +150,7 @@ import { countRender } from './dev/renderCount';
 import { resolveSongLiked } from './utils/resolveSongLiked';
 import StageSessionEmptyState from './components/app/stage/StageSessionEmptyState';
 import SmtcLyricsOverrideDialogs from './components/app/stage/SmtcLyricsOverrideDialogs';
+import LyricSyncDialog from './components/modal/LyricSyncDialog';
 import { useVisualizerRendererModel } from './components/visualizer/useVisualizerRendererModel';
 import { useVisualizerTunings } from './components/visualizer/useVisualizerTunings';
 import { usePlaybackRuntimeRefs } from './hooks/usePlaybackRuntimeRefs';
@@ -1136,6 +1137,14 @@ export default function App() {
         const local = localSongs.find(candidate => candidate.id === song.localRef.songId);
         return getLocalSongArrayBuffer((local ?? song) as unknown as LocalSong);
     }, [localSongs]);
+
+    // The local song the lyric sync editor works on: the one playing, looked up in the library.
+    const getCurrentLocalSong = useCallback((): LocalSong | null => {
+        const song = usePlaybackStore.getState().currentSong;
+        if (!song || !isLocalPlaybackSong(song)) return null;
+        return localSongs.find(candidate => candidate.id === song.localRef.songId) ?? null;
+    }, [localSongs]);
+    const saveSyncedLocalLyrics = useCallback((content: string, fileName: string) => handleUpdateLocalLyrics(content, false, fileName), [handleUpdateLocalLyrics]);
 
     const automix = useAutomixDecks({
         audioRef,
@@ -2816,6 +2825,7 @@ export default function App() {
             />
 
             <SmtcLyricsOverrideDialogs />
+            <LyricSyncDialog audioRef={audioRef} getLocalSong={getCurrentLocalSong} onSave={saveSyncedLocalLyrics} />
 
             <AppOverlays model={appOverlaysModel} />
 

@@ -2,6 +2,8 @@ import { useSmtcLyricsOverrideStore } from '../../../stores/useSmtcLyricsOverrid
 import { clearSmtcOverrideLyrics } from '../../../utils/smtcLyricsOverride';
 import { nudgeStageLyricOffset } from '../../../utils/smtcLyricOffset';
 import { usePlaybackStore } from '../../../stores/usePlaybackStore';
+import { useLyricSyncStore } from '../../../stores/useLyricSyncStore';
+import { isLocalPlaybackSong } from '../../../utils/appPlaybackGuards';
 import { syncNow } from '../../../services/sync/syncCoordinator';
 import { isSyncConfigured } from '../../../services/sync/syncConfig';
 import { buildObsCustomCss } from '../../../services/obs/obsCustomCss';
@@ -595,6 +597,20 @@ export const settingsCommands: CommandPaletteCommand[] = [
         keywords: ['offset', 'desfase', 'sync', 'spotify', 'youtube'],
         execute: () => {
             nudgeStageLyricOffset(null);
+            return true;
+        },
+    },
+    // Tap-to-sync lyrics for the local song that is playing.
+    {
+        id: 'lyric-sync-local',
+        isAvailable: () => isLocalPlaybackSong(usePlaybackStore.getState().currentSong),
+        group: 'settings',
+        title: 'Sync lyrics by tapping',
+        description: 'Paste the lyrics of this local song and tap at each line or word while it plays',
+        keywords: ['lrc', 'sync', 'sincronizar', 'karaoke', 'cover', 'timing'],
+        execute: () => {
+            if (!isLocalPlaybackSong(usePlaybackStore.getState().currentSong)) return false;
+            useLyricSyncStore.getState().openSync();
             return true;
         },
     },

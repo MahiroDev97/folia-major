@@ -157,6 +157,7 @@ exports[`command palette registry contract > keeps the registered command order 
   "stage-lyrics-later",
   "stage-lyrics-earlier",
   "stage-lyrics-offset-reset",
+  "lyric-sync-local",
   "theme-source-ai",
   "theme-source-cover",
   "theme-quick-editor",

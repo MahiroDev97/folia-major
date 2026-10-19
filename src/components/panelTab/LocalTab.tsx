@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { UnifiedSong, ReplayGainMode } from '../../types';
-import { FileAudio, RefreshCw, FileText, TriangleAlert } from 'lucide-react';
+import { FileAudio, RefreshCw, FileText, TriangleAlert, Timer } from 'lucide-react';
+import { useLyricSyncStore } from '../../stores/useLyricSyncStore';
 import { useTranslation } from 'react-i18next';
 import LyricTimelineOffsetControl from './LyricTimelineOffsetControl';
 import LyricFileButton from './LyricFileButton';
@@ -207,6 +208,14 @@ const LocalTab: React.FC<LocalTabProps> = ({
                         >
                             <RefreshCw size={12} />
                             {t('localMusic.matchOnline')}
+                        </button>
+                        <button
+                            onClick={() => useLyricSyncStore.getState().openSync()}
+                            title={t('lyricSync.title')}
+                            className="px-3 py-1 bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors rounded-lg text-xs font-medium flex items-center gap-1.5"
+                        >
+                            <Timer size={12} />
+                            {t('lyricSync.openButton')}
                         </button>
                     </div>
                 </div>
