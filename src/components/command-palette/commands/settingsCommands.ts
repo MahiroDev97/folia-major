@@ -564,14 +564,14 @@ export const settingsCommands: CommandPaletteCommand[] = [
             return true;
         },
     },
-    // Spotify / YouTube in Stage (SMTC source): replace the automatic lyrics for what is playing.
+    // The SMTC source in Stage: replace the automatic lyrics for what is playing.
     {
         id: 'stage-lyrics-match',
         isAvailable: () => useSmtcLyricsOverrideStore.getState().song !== null,
         group: 'settings',
         title: 'Pick other lyrics for this song',
-        description: 'Search online lyrics for what Spotify or YouTube is playing and remember the choice',
-        keywords: ['wrong lyrics', 'letra equivocada', 'karaoke', 'cover', 'spotify', 'youtube'],
+        description: 'Search online lyrics for what the media session is playing and remember the choice',
+        keywords: ['wrong lyrics', 'letra equivocada', 'karaoke', 'cover', 'smtc', 'stage'],
         execute: () => {
             const store = useSmtcLyricsOverrideStore.getState();
             if (!store.song) return false;
@@ -584,8 +584,8 @@ export const settingsCommands: CommandPaletteCommand[] = [
         isAvailable: () => useSmtcLyricsOverrideStore.getState().song !== null,
         group: 'settings',
         title: 'Import lyrics for this song',
-        description: 'Load a lyric file (.lrc, .ttml…) for what Spotify or YouTube is playing and remember it',
-        keywords: ['lrc', 'my lyrics', 'mi letra', 'cover', 'spotify', 'youtube'],
+        description: 'Load a lyric file (.lrc, .ttml…) for what the media session is playing and remember it',
+        keywords: ['lrc', 'my lyrics', 'mi letra', 'cover', 'smtc', 'stage'],
         execute: () => {
             const store = useSmtcLyricsOverrideStore.getState();
             if (!store.song) return false;
@@ -599,7 +599,7 @@ export const settingsCommands: CommandPaletteCommand[] = [
         group: 'settings',
         title: 'Back to automatic lyrics',
         description: 'Forget the lyrics chosen by hand for this song and search them again',
-        keywords: ['reset lyrics', 'restablecer letra', 'spotify', 'youtube'],
+        keywords: ['reset lyrics', 'restablecer letra', 'smtc', 'stage'],
         execute: () => {
             const { song, notifyChanged } = useSmtcLyricsOverrideStore.getState();
             if (!song) return false;
@@ -613,7 +613,7 @@ export const settingsCommands: CommandPaletteCommand[] = [
         group: 'settings',
         title: 'Delay lyrics by 0.5 s',
         description: 'Show the lyrics later when they run ahead of the song; remembered for this video or track',
-        keywords: ['offset', 'desfase', 'sync', 'karaoke', 'spotify', 'youtube'],
+        keywords: ['offset', 'desfase', 'sync', 'karaoke', 'smtc', 'stage'],
         execute: () => {
             if (!useSmtcLyricsOverrideStore.getState().song) return false;
             nudgeStageLyricOffset(500);
@@ -626,7 +626,7 @@ export const settingsCommands: CommandPaletteCommand[] = [
         group: 'settings',
         title: 'Advance lyrics by 0.5 s',
         description: 'Show the lyrics earlier when they lag behind the song; remembered for this video or track',
-        keywords: ['offset', 'desfase', 'sync', 'karaoke', 'spotify', 'youtube'],
+        keywords: ['offset', 'desfase', 'sync', 'karaoke', 'smtc', 'stage'],
         execute: () => {
             if (!useSmtcLyricsOverrideStore.getState().song) return false;
             nudgeStageLyricOffset(-500);
@@ -639,7 +639,7 @@ export const settingsCommands: CommandPaletteCommand[] = [
         group: 'settings',
         title: 'Clear this song\'s lyric offset',
         description: 'Put the lyrics back on the original timing for this video or track',
-        keywords: ['offset', 'desfase', 'sync', 'spotify', 'youtube'],
+        keywords: ['offset', 'desfase', 'sync', 'smtc', 'stage'],
         execute: () => {
             nudgeStageLyricOffset(null);
             return true;

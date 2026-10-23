@@ -23,7 +23,6 @@ type StageSessionEmptyStateProps = {
 const SOURCE_LABELS: Record<string, string> = {
     'now-playing': 'Stage · Now Playing',
     playercap: 'Stage · Nexus PlayerCap',
-    smtc: 'Stage · Spotify / YouTube',
 };
 
 const StageSessionEmptyState: React.FC<StageSessionEmptyStateProps> = ({
@@ -68,7 +67,7 @@ const StageSessionEmptyState: React.FC<StageSessionEmptyStateProps> = ({
         <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center px-6">
             <div className={`max-w-lg rounded-3xl border px-6 py-5 text-center backdrop-blur-md ${isDaylight ? 'border-black/10 bg-white/50 text-zinc-800' : 'border-white/10 bg-black/30 text-white'}`}>
                 <div className="text-xs uppercase tracking-[0.22em] opacity-50">
-                    {(stageSource && SOURCE_LABELS[stageSource]) ?? 'Stage · Stage API'}
+                    {stageSource === 'smtc' ? `Stage · ${t('options.smtcSourceLabel')}` : (stageSource && SOURCE_LABELS[stageSource]) ?? 'Stage · Stage API'}
                 </div>
                 {/* One key for every source. The original branched on now-playing and then used the
                     same key in both arms - preserved as-is rather than inventing a second string. */}

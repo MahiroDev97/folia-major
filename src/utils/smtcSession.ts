@@ -1,9 +1,9 @@
 import type { WebLyricClock } from '../types/webLyricSource';
 
 // src/utils/smtcSession.ts
-// Pure helpers for the SMTC Stage source (Windows media sessions published by Spotify, browsers
-// playing YouTube, and other players): pick the session to follow, turn a video title into
-// something a lyric search can match, and build the lyric clock anchor.
+// Pure helpers for the SMTC Stage source (Windows media sessions published by music apps,
+// browsers playing a video site, and other players): pick the session to follow, turn a video
+// title into something a lyric search can match, and build the lyric clock anchor.
 
 export interface SmtcSessionLike {
   appId: string;
@@ -32,7 +32,12 @@ export interface SmtcCleanTrack {
   context?: string;
 }
 
-export const isSpotifySmtcApp = (appId: string): boolean => /spotify/i.test(appId);
+// Browsers publish a video's title and channel; a music app publishes the track's own tags. The
+// ids are Windows AppUserModelIDs: Chromium browsers and their installed web apps carry the
+// browser's name, Firefox a fixed hash (release and Developer Edition).
+const BROWSER_APP_ID = /chrome|chromium|msedge|edge|brave|opera|vivaldi|firefox|308046B0AF4A39CB|6F193CCC56814779/i;
+
+export const isBrowserSmtcApp = (appId: string): boolean => BROWSER_APP_ID.test(appId);
 
 // Follows whatever is playing; when several play at once, the one that changed most recently.
 // Nothing playing: stay on the session Windows calls current, else the latest paused one.
@@ -130,7 +135,7 @@ const finish = (title: string, artist: string) => ({
   artist: tidy(artist.replace(FEAT, '').replace(ARTIST_SUFFIX, '')),
 });
 
-// Spotify already publishes clean title/artist. Browsers publish the video title and the channel
+// A music app already publishes clean title/artist. Browsers publish the video title and the channel
 // name, e.g. "DECO*27 - ボルテッカー feat. 初音ミク" by "DECO*27", or "Despacito" by "Luis Fonsi - Topic".
 // Karaoke, instrumental and cover uploads are reported in `version` and their tags removed, so the
 // lyric search finds the original song. "A - B" is read against the channel name; when neither side
@@ -139,7 +144,7 @@ export function cleanSmtcTrack(session: Pick<SmtcSessionLike, 'appId' | 'title' 
   const rawTitle = session.title.trim();
   const rawArtist = session.artist.trim();
   const version = detectSmtcVersion(rawTitle);
-  if (isSpotifySmtcApp(session.appId)) {
+  if (!isBrowserSmtcApp(session.appId)) {
     return { title: version ? tidy(stripVersionTags(rawTitle)) || rawTitle : rawTitle, artist: rawArtist, version };
   }
 
@@ -243,9 +248,10 @@ export function stableStageSongId(seed: string): number {
 }
 
 /**
- * A browser session under a minute long is almost always a YouTube ad or a Short: following it
- * would search lyrics for a commercial and drop the song. Spotify never reports ads this way.
+ * A browser session under a minute long is almost always a video site's ad or a short clip:
+ * following it would search lyrics for a commercial and drop the song. Music apps never report
+ * ads this way.
  */
 export const isLikelyAdOrShort = (session: Pick<SmtcSessionLike, 'appId' | 'durationMs'>): boolean => (
-  !isSpotifySmtcApp(session.appId) && session.durationMs > 0 && session.durationMs < 61_000
+  isBrowserSmtcApp(session.appId) && session.durationMs > 0 && session.durationMs < 61_000
 );

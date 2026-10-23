@@ -2737,7 +2737,7 @@ const discordPresence = createDiscordPresenceController({
   },
 });
 
-// Windows media sessions (Spotify, YouTube in a browser, …) for the SMTC Stage source. Started on
+// Windows media sessions (music apps, video sites in a browser, …) for the SMTC Stage source. Started on
 // demand by the renderer while that source is active, stopped when it leaves or the app quits.
 const smtcMonitor = createSmtcMonitor({
   onSnapshot: (snapshot) => {

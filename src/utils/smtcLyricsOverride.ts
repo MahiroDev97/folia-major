@@ -9,7 +9,7 @@ import type { SmtcCleanTrack, SmtcSessionLike } from './smtcSession';
 // Lyrics the user picked by hand for an SMTC track (an online match or an imported file),
 // remembered per track. Stored through the same OnlineLyricsState cache online songs use, under
 // a synthetic Stage song keyed by the raw title and artist Windows reports (not by the app), so
-// the same YouTube upload keeps its choice while a karaoke and the original stay separate.
+// the same video upload keeps its choice while a karaoke and the original stay separate.
 
 export const smtcOverrideMediaId = (session: Pick<SmtcSessionLike, 'title' | 'artist'>): string => (
     `smtc:${session.title.trim()}|${session.artist.trim()}`

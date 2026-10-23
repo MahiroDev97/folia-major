@@ -8,7 +8,7 @@ import { readLyricFile } from '../../../utils/lyrics/lyricFileDecoding';
 import { importSmtcOverrideLyrics } from '../../../utils/smtcLyricsOverride';
 
 // src/components/app/stage/SmtcLyricsOverrideDialogs.tsx
-// The two ways to replace the lyrics of what Spotify / YouTube is playing in Stage: Folia's online
+// The two ways to replace the lyrics of what the SMTC source is playing in Stage: Folia's online
 // lyric search (the same modal online songs use) or importing a lyric file. Both save the choice
 // for that track; useSmtcSource picks it up through the store's revision. Opened from the
 // command palette, so it renders nothing until asked.

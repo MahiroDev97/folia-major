@@ -157,7 +157,7 @@ export const DesktopStageRows: React.FC = () => {
                             { value: 'stage-api', label: 'Stage API' },
                             { value: 'now-playing', label: 'Now Playing' },
                             { value: 'playercap', label: 'PlayerCap' },
-                            { value: 'smtc', label: 'Spotify / YouTube' },
+                            { value: 'smtc', label: t('options.smtcSourceLabel') },
                         ]}
                         onChange={next => void onStageSourceChange?.(next)}
                     />

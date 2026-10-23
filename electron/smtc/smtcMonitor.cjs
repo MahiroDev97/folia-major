@@ -1,6 +1,6 @@
 // electron/smtc/smtcMonitor.cjs
 // Windows-only: runs smtcHelper.ps1 in a child Windows PowerShell and turns its JSON lines into
-// session snapshots (Spotify, browsers playing YouTube, any SMTC publisher). Native SMTC addons
+// session snapshots (music apps, browsers playing a video site, any SMTC publisher). Native SMTC addons
 // deadlock on Electron's STA main thread and drop the measurement timestamp, so a helper process
 // that reports LastUpdatedTime is both simpler and more accurate for lyric sync.
 

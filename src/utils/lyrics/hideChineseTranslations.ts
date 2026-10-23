@@ -1,7 +1,7 @@
 import type { LyricAlternateText, LyricBackgroundVocal, Line } from '../../types';
 
 // src/utils/lyrics/hideChineseTranslations.ts
-// Online sources (NetEase, QQ, KuGou) attach translations that are always Simplified Chinese.
+// Online lyric sources attach translations that are always Simplified Chinese.
 // Outside a Chinese interface they are noise, so the visualizer drops them; romanization and
 // translations in any other language are kept. Lines without changes keep their identity.
 

@@ -13,7 +13,7 @@ import { useSmtcLyricsOverrideStore } from '../stores/useSmtcLyricsOverrideStore
 import { buildSmtcOverrideSong, loadSmtcOverrideLyrics } from '../utils/smtcLyricsOverride';
 import {
   cleanSmtcTrack,
-  isSpotifySmtcApp,
+  isBrowserSmtcApp,
   pickActiveSmtcSession,
   smtcSessionClock,
   smtcTrackKey,
@@ -25,7 +25,7 @@ import {
 } from '../utils/smtcSession';
 
 // src/hooks/useSmtcSource.ts
-// SMTC Stage source: follows what Windows reports as playing (Spotify, YouTube in a browser, …)
+// SMTC Stage source: follows what Windows reports as playing (a music app, a video site in a browser, …)
 // through the Electron main process, searches lyrics itself (Folia's providers first, LRCLIB as
 // fallback) and exposes the same WebLyricSource shape as the PlayerCap / now-playing sources.
 
@@ -103,7 +103,7 @@ function buildLyricQueries(track: SmtcCleanTrack): LyricQuery[] {
 async function searchLyrics(track: SmtcCleanTrack, session: SmtcSessionLike): Promise<SmtcLyricsResult> {
   // A music video often runs longer than the song, and a karaoke or cover rarely matches the
   // original's length, so in those cases durations are only a hint (or ignored).
-  const durationIsReliable = isSpotifySmtcApp(session.appId) && !track.version;
+  const durationIsReliable = !isBrowserSmtcApp(session.appId) && !track.version;
   // "Mulán" in "Mi Reflejo | Mulán | Karaoke" tells two songs with the same name apart.
   const album = track.context || session.album || undefined;
   const queries = buildLyricQueries(track);
@@ -237,7 +237,7 @@ export function useSmtcSource({ enabled }: { enabled: boolean }): SmtcSource {
         return;
       }
 
-      // A YouTube ad (or a Short) between songs: keep the song on screen, paused, until it returns.
+      // A video site's ad (or a short clip) between songs: keep the song on screen, paused, until it returns.
       if (isLikelyAdOrShort(session)) {
         setState(s => (s.track
           ? { ...s, playerState: 'paused', clock: { ...s.clock, positionSec: currentWebLyricTimeSec(s.clock, Date.now()), anchoredAtMs: Date.now(), playing: false } }

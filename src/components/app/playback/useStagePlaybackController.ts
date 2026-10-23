@@ -196,7 +196,7 @@ export function useStagePlaybackController({
     const playerCapSongIdRef = useRef(-1);
     const playerCapSongKeyRef = useRef('');
 
-    // === SMTC stage source (Windows media sessions: Spotify, YouTube in a browser): same passive mirror as PlayerCap ===
+    // === SMTC stage source (Windows media sessions: music apps, video sites in a browser): same passive mirror as PlayerCap ===
     const isSmtcStageActive = activePlaybackContext === 'stage' && stageSource === 'smtc';
     const { state: smtcState, getCurrentTimeSec: getSmtcTimeSec } = useSmtcSource({ enabled: stageSource === 'smtc' });
     const getSmtcDisplayTime = useCallback((nowMs = Date.now()) => getSmtcTimeSec(nowMs), [getSmtcTimeSec]);
@@ -216,7 +216,7 @@ export function useStagePlaybackController({
     const mirrorPlayerState = stageSource === 'smtc' ? smtcState.playerState : playerCapState.playerState;
     const mirrorLyricsLoading = stageSource === 'smtc' ? smtcState.lyricsLoading : false;
     // A fixed id per upload (app + title + artist), so the per-song lyric offset Folia remembers
-    // applies to the same Spotify track or YouTube video every time it plays.
+    // applies to the same track or video every time it plays.
     const smtcSongSeed = smtcState.track?.seed;
     const smtcSongId = useMemo(() => (typeof smtcSongSeed === 'string' ? stableStageSongId(smtcSongSeed) : null), [smtcSongSeed]);
 
@@ -1355,7 +1355,7 @@ export function useStagePlaybackController({
         const songId = stageSource === 'smtc' && smtcSongId !== null ? smtcSongId : playerCapSongIdRef.current;
         const song: SongResult | null = (track || nextLyrics) ? ({
             id: songId,
-            name: track?.name || track?.title || (stageSource === 'smtc' ? 'Spotify / YouTube' : 'PlayerCap'),
+            name: track?.name || track?.title || (stageSource === 'smtc' ? t('options.smtcSourceLabel') : 'PlayerCap'),
             artists: [{ id: 0, name: track?.artist || '' }],
             album: { id: 0, name: '', coverUrl: track?.coverUrl || undefined },
             durationMs,
@@ -1387,6 +1387,7 @@ export function useStagePlaybackController({
         mirrorActivePlayer,
         mirrorDurationSec,
         smtcSongId,
+        t,
         pendingResumeTimeRef,
         setAudioSrc,
         setCachedCoverUrl,

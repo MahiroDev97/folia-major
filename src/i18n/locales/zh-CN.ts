@@ -2348,6 +2348,7 @@ export default {
     "playerCapIgnoreClearHint": "暂停、空闲、关窗时保留歌词，换播放器才刷新。",
     "playerCapWaitingLyrics": "已连接，等待歌词",
     "playerCapConnecting": "正在连接 Nexus PlayerCap…",
+    "smtcSourceLabel": "Spotify / YouTube",
     "smtcSourceTitle": "跟随本机的 Spotify 或 YouTube",
     "smtcSourceDesc": "读取 Windows 报告的正在播放内容（Spotify 桌面版、Chrome/Edge/Brave/Firefox 中的 YouTube），并自行搜索歌词。仅限 Windows。",
     "smtcWaiting": "在 Spotify 或 YouTube 中播放歌曲，歌词就会显示在这里。",

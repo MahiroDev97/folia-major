@@ -2348,6 +2348,7 @@ export default {
     "playerCapIgnoreClearHint": "Pertahankan lirik saat jeda atau idle; segarkan saat ganti pemutar.",
     "playerCapWaitingLyrics": "Terhubung, menunggu lirik",
     "playerCapConnecting": "Menghubungkan ke Nexus PlayerCap…",
+    "smtcSourceLabel": "Spotify / YouTube",
     "smtcSourceTitle": "Ikuti Spotify atau YouTube di PC ini",
     "smtcSourceDesc": "Membaca apa yang dilaporkan Windows sedang diputar (Spotify desktop, YouTube di Chrome, Edge, Brave, atau Firefox) dan mencari liriknya sendiri. Hanya Windows.",
     "smtcWaiting": "Putar sesuatu di Spotify atau YouTube dan liriknya akan muncul di sini.",
