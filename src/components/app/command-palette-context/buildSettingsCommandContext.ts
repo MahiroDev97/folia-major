@@ -6,7 +6,7 @@ import { useAutomixSettingsStore } from '../../../stores/useAutomixSettingsStore
 import { useDesktopSettingsStore } from '../../../stores/useDesktopSettingsStore';
 import { useLocalLibrarySettingsStore } from '../../../stores/useLocalLibrarySettingsStore';
 import { isLocalLibraryAutoScanSupported } from '../../../services/localLibraryAutoScan';
-import { isNeteaseScrobbleReady } from '../../../services/onlineMusic/playbackReportGate';
+import { isPlaybackReportReady } from '../../../services/onlineMusic/playbackReportGate';
 import { useLyricSettingsStore } from '../../../stores/useLyricSettingsStore';
 import { useGridViewSettingsStore } from '../../../stores/useGridViewSettingsStore';
 import { useLatticeSettingsStore } from '../../../stores/useLatticeSettingsStore';
@@ -115,6 +115,8 @@ export const buildSettingsCommandContext = (
             const wall = useLibraryWallLookStore.getState();
             wall.setBackdropBlur(!wall.backdropBlur);
         },
+        libraryWallSeamDirection: () => useLibraryWallLookStore.getState().seamDirection,
+        setLibraryWallSeamDirection: direction => useLibraryWallLookStore.getState().setSeamDirection(direction),
         ponderHintVisibility: ponder.ponderHintVisibility,
         setPonderHintVisibility: ponder.setPonderHintVisibility,
         togglePonderTouchButton: () => {
@@ -174,6 +176,9 @@ export const buildSettingsCommandContext = (
         toggleAutoHideCursorWithPlayerChrome: () => chrome.handleToggleAutoHideCursorWithPlayerChrome(
             !usePlayerChromeSettingsStore.getState().autoHideCursorWithPlayerChrome,
         ),
+        toggleHideCursorWhenIdle: () => chrome.handleToggleHideCursorWhenIdle(
+            !usePlayerChromeSettingsStore.getState().hideCursorWhenIdle,
+        ),
         toggleAutoPlayOnLaunch: () => audio.handleToggleAutoPlayOnLaunch(
             !useAudioSettingsStore.getState().autoPlayOnLaunch,
         ),
@@ -183,10 +188,13 @@ export const buildSettingsCommandContext = (
         togglePlaybackFade: () => audio.handleTogglePlaybackFade(
             !useAudioSettingsStore.getState().playbackFadeEnabled,
         ),
+        toggleAutoSkipUnplayable: () => audio.handleToggleAutoSkipUnplayable(
+            !useAudioSettingsStore.getState().autoSkipUnplayable,
+        ),
         canAutoScanLocalLibrary: isLocalLibraryAutoScanSupported,
         toggleLocalLibraryAutoScan: () => useLocalLibrarySettingsStore.getState().toggleAutoScan(),
-        canReportNeteasePlayback: isNeteaseScrobbleReady,
-        toggleNeteaseScrobble: () => audio.handleToggleNeteaseScrobble(
+        canReportPlayback: () => isPlaybackReportReady(),
+        togglePlaybackReport: () => audio.handleToggleNeteaseScrobble(
             !useAudioSettingsStore.getState().neteaseScrobbleEnabled,
         ),
         voiceInputPauseSupported: deps.voiceInputPauseSupported,
@@ -197,6 +205,9 @@ export const buildSettingsCommandContext = (
         togglePreventDisplaySleepDuringPlayback: () => desktop.handleTogglePreventDisplaySleepDuringPlayback(
             !useDesktopSettingsStore.getState().preventDisplaySleepDuringPlayback,
         ),
+        toggleBackgroundThrottling: () => desktop.handleToggleBackgroundThrottling(
+            !useDesktopSettingsStore.getState().backgroundThrottling,
+        ),
         toggleWallpaperMode: () => desktop.handleToggleWallpaperMode(
             !useDesktopSettingsStore.getState().wallpaperMode,
         ),
@@ -206,6 +217,9 @@ export const buildSettingsCommandContext = (
         toggleHideRemoteControlTitlebar: () => desktop.handleToggleHideRemoteControlTitlebar(
             !useDesktopSettingsStore.getState().hideRemoteControlTitlebar,
         ),
+        toggleRemoteControlExpandCover: () => desktop.handleToggleRemoteControlExpandCover(
+            !useDesktopSettingsStore.getState().remoteControlExpandCover,
+        ),
         unlockRemoteControl: () => desktop.handleToggleRemoteControlClickThrough(false),
         toggleObsKeepMainWindowAnimation: () => useStageSettingsStore.getState().handleToggleObsKeepMainWindowAnimation(
             !useStageSettingsStore.getState().obsKeepMainWindowAnimation,
@@ -213,6 +227,8 @@ export const buildSettingsCommandContext = (
         toggleWallpaperMacAutohideDock: () => desktop.handleToggleWallpaperMacAutohideDock(
             !useDesktopSettingsStore.getState().wallpaperMacAutohideDock,
         ),
+        gpuPreference: () => useDesktopSettingsStore.getState().gpuPreference,
+        setGpuPreference: desktop.handleSetGpuPreference,
         sleepTimerEnabled: sleepTimer.sleepTimerEnabled,
         setSleepTimerEnabled: sleepTimer.handleToggleSleepTimer,
         sleepTimerHours: sleepTimer.sleepTimerHours,

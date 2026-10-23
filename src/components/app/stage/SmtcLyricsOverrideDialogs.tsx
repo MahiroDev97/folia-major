@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import OnlineLyricMatchModal from '../../modal/OnlineLyricMatchModal';
+import OnlineSongLyricMatch from '../../modal/lyric-match/OnlineSongLyricMatch';
 import { useSmtcLyricsOverrideStore } from '../../../stores/useSmtcLyricsOverrideStore';
 import { useThemeSettingsStore } from '../../../stores/useThemeSettingsStore';
 import { setStatusMessage } from '../../../stores/useStatusMessageStore';
@@ -64,7 +64,7 @@ const SmtcLyricsOverrideDialogs: React.FC = () => {
                 onChange={event => void handleFileChange(event)}
             />
             {dialog === 'match' && song && (
-                <OnlineLyricMatchModal
+                <OnlineSongLyricMatch
                     song={song}
                     isDaylight={isDaylight}
                     onClose={closeDialog}
